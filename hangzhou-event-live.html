@@ -2691,13 +2691,20 @@
     }
 
     .stat {
+      width: 100%;
+      min-width: 0;
       padding: 9px 4px;
       border: 2px dashed rgba(255, 244, 220, .48);
       border-radius: 18px 14px 20px 16px / 16px 20px 13px 20px;
+      appearance: none;
       background: rgba(0, 0, 0, .18);
       box-shadow: inset 0 0 20px rgba(0, 0, 0, .18);
       color: var(--chalk);
+      cursor: pointer;
+      font: inherit;
+      text-align: left;
       transform: rotate(-.4deg);
+      transition: transform 150ms ease, border-color 150ms ease, background 150ms ease, box-shadow 150ms ease;
     }
 
     .stat:nth-child(2) {
@@ -2708,6 +2715,18 @@
     .stat:nth-child(3) {
       border-color: rgba(132, 216, 255, .68);
       transform: rotate(-.2deg);
+    }
+
+    .stat:hover,
+    .stat.active {
+      border-color: rgba(255, 215, 106, .9);
+      background: rgba(255, 215, 106, .1);
+      box-shadow: inset 0 0 20px rgba(0, 0, 0, .18), 0 7px 0 rgba(0, 0, 0, .16);
+      transform: translateY(-1px) rotate(0deg);
+    }
+
+    .stat.active strong {
+      color: var(--chalk-pink);
     }
 
     .stat strong {
@@ -3343,6 +3362,190 @@
       border-bottom: 2px dashed rgba(255, 244, 220, .62);
       background: #10231f;
       transform: rotate(-22deg);
+    }
+
+    .demo-flash-console {
+      display: grid;
+      gap: 12px;
+      margin-bottom: 14px;
+      padding: 14px;
+      border: 2px dashed rgba(132, 216, 255, .56);
+      border-radius: 24px 18px 26px 20px / 18px 26px 18px 24px;
+      background: rgba(0, 0, 0, .16);
+      box-shadow: inset 0 0 24px rgba(0, 0, 0, .14);
+    }
+
+    .demo-flash-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      color: var(--chalk);
+    }
+
+    .demo-flash-head strong {
+      color: var(--chalk-blue);
+      font-size: 22px;
+      font-weight: 950;
+    }
+
+    .demo-flash-head span,
+    .demo-flash-current p {
+      color: var(--chalk-dim);
+      font-size: 13px;
+      font-weight: 900;
+    }
+
+    .demo-flash-actions {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .demo-flash-actions .btn,
+    .demo-flash-actions .ghost-btn,
+    .demo-flash-actions .danger-btn {
+      width: 100%;
+      min-height: 38px;
+      padding: 0 10px;
+      font-size: 13px;
+    }
+
+    .demo-flash-current {
+      display: grid;
+      gap: 5px;
+      padding: 12px;
+      border: 2px dashed rgba(255, 244, 220, .38);
+      border-radius: 18px 14px 20px 16px / 16px 20px 13px 20px;
+      background: rgba(255, 244, 220, .055);
+    }
+
+    .demo-flash-current strong {
+      color: var(--chalk);
+      font-size: 18px;
+      font-weight: 950;
+    }
+
+    .stage-demo-wall {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: clamp(10px, 1.2vw, 18px);
+      max-width: 1040px;
+    }
+
+    .stage-demo-card {
+      min-height: clamp(132px, 13vw, 190px);
+      display: grid;
+      align-content: start;
+      gap: 8px;
+      padding: clamp(14px, 1.4vw, 22px);
+      border: 2px dashed rgba(255, 244, 220, .48);
+      border-radius: 24px 16px 26px 18px / 18px 27px 16px 24px;
+      background: rgba(0, 0, 0, .15);
+      box-shadow: inset 0 0 20px rgba(0, 0, 0, .14);
+      overflow: hidden;
+      transform: rotate(-.35deg);
+    }
+
+    .stage-demo-card:nth-child(2n) {
+      border-color: rgba(132, 216, 255, .58);
+      transform: rotate(.35deg);
+    }
+
+    .stage-demo-card:nth-child(3n) {
+      border-color: rgba(166, 220, 117, .58);
+    }
+
+    .stage-demo-card .demo-card-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      min-width: 0;
+    }
+
+    .stage-demo-card b {
+      min-width: 0;
+      color: var(--chalk);
+      font-size: clamp(20px, 1.9vw, 32px);
+      font-weight: 950;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .stage-demo-card em {
+      flex: none;
+      color: var(--chalk-blue);
+      font-family: var(--mono);
+      font-size: 11px;
+      font-style: normal;
+      font-weight: 950;
+      letter-spacing: .08em;
+    }
+
+    .stage-demo-card strong {
+      color: var(--chalk-yellow);
+      font-size: clamp(17px, 1.45vw, 24px);
+      line-height: 1.1;
+      font-weight: 950;
+    }
+
+    .stage-demo-card p {
+      margin: 0;
+      color: var(--chalk-dim);
+      font-size: clamp(13px, 1.05vw, 17px);
+      line-height: 1.35;
+      font-weight: 850;
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .stage-demo-spotlight {
+      display: grid;
+      gap: clamp(16px, 2vw, 28px);
+      max-width: 1000px;
+    }
+
+    .stage-demo-spotlight .stage-person {
+      max-width: 100%;
+    }
+
+    .stage-demo-spotlight .stage-topic h2 {
+      font-size: clamp(42px, 5.2vw, 92px);
+    }
+
+    .stage-demo-kpis {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      max-width: 680px;
+    }
+
+    .stage-demo-kpis span {
+      display: grid;
+      gap: 4px;
+      padding: 12px;
+      border: 2px dashed rgba(255, 244, 220, .44);
+      border-radius: 16px 12px 18px 14px / 14px 20px 12px 18px;
+      color: var(--chalk);
+      background: rgba(0, 0, 0, .14);
+      font-weight: 950;
+    }
+
+    .stage-demo-kpis small {
+      color: var(--chalk-dim);
+      font-family: var(--mono);
+      font-size: 10px;
+      letter-spacing: .1em;
+    }
+
+    .stage-demo-next {
+      color: var(--chalk-dim);
+      font-size: 13px;
+      font-weight: 900;
     }
 
     body.stage-mode .stage-view {
@@ -4788,22 +4991,22 @@
           </h2>
           <input class="search" id="participantSearch" type="search" placeholder="搜索昵称 / 标签" autocomplete="off" />
           <div class="stats" aria-label="活动统计">
-            <div class="stat">
+            <button class="stat active" type="button" data-roster-filter="all">
               <strong id="statParticipants">0</strong>
               <span>报名总数</span>
-            </div>
-            <div class="stat">
+            </button>
+            <button class="stat" type="button" data-roster-filter="speakers">
               <strong id="statSpeakers">0</strong>
               <span>选手总数</span>
-            </div>
-            <div class="stat">
+            </button>
+            <button class="stat" type="button" data-roster-filter="audience">
               <strong id="statAudience">0</strong>
               <span>观众总数</span>
-            </div>
-            <div class="stat">
+            </button>
+            <button class="stat" type="button" data-roster-filter="online">
               <strong id="statOnline">0</strong>
               <span>线上总数</span>
-            </div>
+            </button>
           </div>
         </div>
         <div class="roster" id="roster"></div>
@@ -4929,6 +5132,7 @@
       { id: "caller", label: "叫号", code: "CALLER", hint: "放大当前报名者" },
       { id: "draw", label: "抽题", code: "DRAW", hint: "揭晓题目和 PPT" },
       { id: "talk", label: "展示", code: "TALK", hint: "选手展示中" },
+      { id: "demoFlash", label: "快闪", code: "FLASH", hint: "项目墙和随机快闪" },
       { id: "intermission", label: "中场", code: "BREAK", hint: "休息或等待下一位" },
       { id: "closing", label: "结束", code: "CLOSE", hint: "收尾和合影" }
     ];
@@ -5011,6 +5215,7 @@
     let eventData = loadEventData();
     let state = loadEventState();
     let searchQuery = "";
+    let rosterFilter = "all";
     let pendingDrawParticipantId = null;
     const remoteSyncState = {
       pending: false,
@@ -5092,6 +5297,9 @@
         stageMode: DEFAULT_STAGE_MODE,
         currentParticipantId: null,
         draws: {},
+        demoFlashParticipantId: null,
+        demoFlashCompletedIds: [],
+        demoFlashSkippedIds: [],
         loadedPptNames: [],
         updatedAt: null
       };
@@ -5148,12 +5356,17 @@
         })
       );
       const loadedPptNames = Array.isArray(safe.loadedPptNames) ? safe.loadedPptNames.map(String) : [];
+      const cleanIdList = value => (Array.isArray(value) ? value.map(String).filter(id => participantIds.has(id)) : []);
+      const demoFlashParticipantId = participantIds.has(safe.demoFlashParticipantId) ? safe.demoFlashParticipantId : null;
       const currentParticipantId = safe.currentParticipantId || eventData.participants[0]?.id || null;
       const stageMode = STAGE_MODES.some(mode => mode.id === safe.stageMode) ? safe.stageMode : DEFAULT_STAGE_MODE;
       return {
         stageMode,
         currentParticipantId,
         draws,
+        demoFlashParticipantId,
+        demoFlashCompletedIds: cleanIdList(safe.demoFlashCompletedIds),
+        demoFlashSkippedIds: cleanIdList(safe.demoFlashSkippedIds),
         loadedPptNames,
         updatedAt: safe.updatedAt || null
       };
@@ -5297,6 +5510,9 @@
       els.statSpeakers.textContent = stats.speakers;
       els.statAudience.textContent = stats.audience;
       els.statOnline.textContent = stats.online;
+      document.querySelectorAll("[data-roster-filter]").forEach(button => {
+        button.classList.toggle("active", button.dataset.rosterFilter === rosterFilter);
+      });
       els.pptLoadedCount.textContent = `${state.loadedPptNames.length} FILES`;
       els.logCount.textContent = `${lockedCount} ROWS`;
       renderSyncStatus();
@@ -5343,23 +5559,25 @@
 
     function renderRoster() {
       const query = searchQuery.trim().toLowerCase();
-      const filtered = eventData.participants.filter(participant => {
-        const haystack = [
-          participant.nickname,
-          participant.presence,
-          participant.role,
-          participant.stage,
-          ...participant.keywords
-        ].join(" ").toLowerCase();
-        return !query || haystack.includes(query);
-      });
+      const filtered = eventData.participants
+        .filter(participantMatchesRosterFilter)
+        .filter(participant => {
+          const haystack = [
+            participant.nickname,
+            participant.presence,
+            participant.role,
+            participant.stage,
+            ...participant.keywords
+          ].join(" ").toLowerCase();
+          return !query || haystack.includes(query);
+        });
 
       if (!filtered.length) {
         if (!eventData.participants.length && shouldUseRemoteData()) {
           els.roster.innerHTML = `<div class="empty-state"><strong>${remoteSyncState.error ? "同步失败" : "正在同步报名"}</strong><span>${remoteSyncState.error ? "刷新页面或点击同步数据再试。" : "正在读取飞书报名数据。"}</span></div>`;
           return;
         }
-        els.roster.innerHTML = `<div class="empty-state"><strong>没有匹配报名</strong><span>调整搜索词后再看。</span></div>`;
+        els.roster.innerHTML = `<div class="empty-state"><strong>${escapeHTML(rosterFilterLabel(rosterFilter))}为空</strong><span>调整统计筛选或搜索词后再看。</span></div>`;
         return;
       }
 
@@ -5377,6 +5595,37 @@
           </button>
         `;
       }).join("");
+    }
+
+    function rosterFilterLabel(filter) {
+      const labels = {
+        all: "全部报名",
+        speakers: "正式选手",
+        audience: "观众/参与者",
+        online: "线上报名"
+      };
+      return labels[filter] || labels.all;
+    }
+
+    function participantMatchesRosterFilter(participant) {
+      if (rosterFilter === "speakers") return isSpeakerParticipant(participant);
+      if (rosterFilter === "audience") return !isSpeakerParticipant(participant);
+      if (rosterFilter === "online") return /线上|online/i.test(String(participant.presence || ""));
+      return true;
+    }
+
+    function filteredRosterParticipants() {
+      return eventData.participants.filter(participantMatchesRosterFilter);
+    }
+
+    function setRosterFilter(filter) {
+      rosterFilter = ["all", "speakers", "audience", "online"].includes(filter) ? filter : "all";
+      const visible = filteredRosterParticipants();
+      if (visible.length && !visible.some(participant => participant.id === state.currentParticipantId)) {
+        state.currentParticipantId = visible[0].id;
+        saveEventState();
+      }
+      render();
     }
 
     function renderRosterTags(participant) {
@@ -5604,20 +5853,92 @@
       els.openPptButton.disabled = true;
     }
 
+    function hasDemoContent(participant) {
+      const demo = participant && participant.demo ? participant.demo : {};
+      return Boolean(demo.title || demo.description || demo.url);
+    }
+
+    function demoFlashPool({ includeCompleted = false, includeSkipped = true } = {}) {
+      const completed = new Set(state.demoFlashCompletedIds || []);
+      const skipped = new Set(state.demoFlashSkippedIds || []);
+      const hasPublicDemo = participant => hasDemoContent(participant);
+      const audienceProjects = eventData.participants.filter(participant => !isSpeakerParticipant(participant) && hasPublicDemo(participant));
+      const source = audienceProjects.length ? audienceProjects : eventData.participants.filter(hasPublicDemo);
+      return source.filter(participant => {
+        if (!includeCompleted && completed.has(participant.id)) return false;
+        if (!includeSkipped && skipped.has(participant.id)) return false;
+        return true;
+      });
+    }
+
+    function currentDemoFlashParticipant() {
+      return eventData.participants.find(participant => participant.id === state.demoFlashParticipantId) || null;
+    }
+
+    function demoTitle(participant) {
+      const demo = participant && participant.demo ? participant.demo : {};
+      return demo.title || `${participant.nickname} 的 Demo`;
+    }
+
+    function demoDescription(participant) {
+      const demo = participant && participant.demo ? participant.demo : {};
+      return demo.description || demo.url || "这个项目还没有写详细介绍，适合现场快速 cue 一下。";
+    }
+
+    function renderDemoFlashControls() {
+      const pool = demoFlashPool({ includeCompleted: true });
+      const remaining = demoFlashPool({ includeCompleted: false, includeSkipped: false });
+      const current = currentDemoFlashParticipant();
+      const completedCount = (state.demoFlashCompletedIds || []).filter(id => pool.some(participant => participant.id === id)).length;
+      return `
+        <div class="demo-flash-console">
+          <div class="demo-flash-head">
+            <strong>项目快闪</strong>
+            <span>${remaining.length}/${pool.length} 待抽 · ${completedCount} 已完成</span>
+          </div>
+          <div class="demo-flash-actions">
+            <button class="ghost-btn" type="button" data-action="demo-wall" ${pool.length ? "" : "disabled"}>项目墙</button>
+            <button class="btn" type="button" data-action="demo-random" ${remaining.length ? "" : "disabled"}>随机快闪</button>
+            <button class="ghost-btn" type="button" data-action="demo-complete" ${current ? "" : "disabled"}>标记完成</button>
+            <button class="ghost-btn" type="button" data-action="demo-skip" ${current ? "" : "disabled"}>跳过</button>
+            <button class="danger-btn" type="button" data-action="demo-reroll" ${current && remaining.length > 1 ? "" : "disabled"}>重抽</button>
+          </div>
+          <div class="demo-flash-current">
+            ${current ? `
+              <span class="badge ready">ON FLASH</span>
+              <strong>${escapeHTML(current.nickname)}</strong>
+              <p>${escapeHTML(demoTitle(current))}</p>
+            ` : `
+              <span class="badge pending">WALL READY</span>
+              <strong>${pool.length ? "等待随机快闪" : "暂无可快闪项目"}</strong>
+              <p>${pool.length ? "池子优先包含有 Demo 描述的观众/参与者。" : "有项目描述的报名会自动进入池子。"}</p>
+            `}
+          </div>
+        </div>
+      `;
+    }
+
     function renderDemoPanel() {
       const participant = selectedParticipant();
       if (!participant) {
-        els.demoPanel.innerHTML = `<div class="empty-state"><strong>没有 Demo 信息</strong><span>导入选手数据后会在这里显示。</span></div>`;
+        els.demoPanel.innerHTML = `
+          ${renderDemoFlashControls()}
+          <div class="empty-state"><strong>没有 Demo 信息</strong><span>导入选手数据后会在这里显示。</span></div>
+        `;
         return;
       }
 
       const demo = participant.demo || {};
       if (!demo.title && !demo.description && !demo.url) {
-        els.demoPanel.innerHTML = `<div class="empty-state"><strong>当前选手未填写 Demo</strong><span>Lightning Talk 环节可以跳过。</span></div>`;
+        els.demoPanel.innerHTML = `
+          ${renderDemoFlashControls()}
+          <div class="empty-state"><strong>当前报名者未填写 Demo</strong><span>项目快闪会自动从有项目描述的人里抽。</span></div>
+        `;
         return;
       }
 
       els.demoPanel.innerHTML = `
+        ${renderDemoFlashControls()}
         <div class="demo-list">
           <div class="demo-card">
             <strong>${escapeHTML(demo.title || `${participant.nickname} 的 Demo`)}</strong>
@@ -5657,6 +5978,10 @@
       }
       if (mode === "talk") {
         renderTalkStage(participant, topic, ppt, draw);
+        return;
+      }
+      if (mode === "demoFlash") {
+        renderDemoFlashStage();
         return;
       }
       if (mode === "intermission") {
@@ -5801,6 +6126,51 @@
         </aside>
       `;
       els.stageView.innerHTML = renderStageShell("talk", "TALKING", main, side, draw ? `LOCKED · ${formatDateTime(draw.drawnAt)}` : "TALK READY", "assets/penguin-podium.png");
+    }
+
+    function renderDemoFlashStage() {
+      const current = currentDemoFlashParticipant();
+      const pool = demoFlashPool({ includeCompleted: true });
+      const remaining = demoFlashPool({ includeCompleted: false, includeSkipped: false });
+      const completedCount = (state.demoFlashCompletedIds || []).filter(id => pool.some(participant => participant.id === id)).length;
+      const main = current ? renderDemoFlashSpotlight(current) : `
+        <div class="stage-topic waiting">
+          <div class="topic-label">DEMO FLASH</div>
+          <h2>项目快闪池</h2>
+          <p>先看一整面项目墙，主持人可以随时从控制台随机抽一个人进入 Spotlight。</p>
+        </div>
+        ${renderDemoFlashWall(9)}
+      `;
+      const side = `
+        <aside class="stage-side">
+          <div class="stage-info">
+            <div class="stage-info-label">FLASH POOL</div>
+            <strong>${remaining.length}/${pool.length}</strong>
+            <p>${completedCount} 个已完成。池子优先展示有 Demo 描述的观众/参与者。</p>
+          </div>
+          ${renderDemoFlashQueue(5)}
+          ${renderCompanion(current ? "assets/penguin-mail.png" : "assets/penguin-laptop.png")}
+        </aside>
+      `;
+      els.stageView.innerHTML = renderStageShell("demo-flash", current ? "SPOTLIGHT" : "DEMO WALL", main, side, current ? "FLASH NOW" : "WALL READY", current ? "assets/penguin-mail.png" : "assets/penguin-laptop.png");
+    }
+
+    function renderDemoFlashSpotlight(participant) {
+      return `
+        <div class="stage-demo-spotlight">
+          ${renderParticipantSpotlight(participant)}
+          <div class="stage-topic">
+            <div class="topic-label">RANDOM SPOTLIGHT</div>
+            <h2>${escapeHTML(demoTitle(participant))}</h2>
+            <p>${escapeHTML(demoDescription(participant))}</p>
+          </div>
+          <div class="stage-demo-kpis">
+            <span><small>MODE</small>02:30</span>
+            <span><small>TYPE</small>${escapeHTML(participant.role)}</span>
+            <span><small>JOIN</small>${escapeHTML(participant.presence)}</span>
+          </div>
+        </div>
+      `;
     }
 
     function renderIntermissionStage() {
@@ -5958,6 +6328,58 @@
 
     function isSpeakerRole(role) {
       return /乱讲PPT选手|选手|speaker|player/i.test(String(role || ""));
+    }
+
+    function renderDemoFlashWall(limit) {
+      const items = demoFlashPool({ includeCompleted: true }).slice(0, limit);
+      if (!items.length) {
+        return `<div class="stage-queue"><strong>暂无项目快闪</strong><span>有项目描述的报名会自动进入这里。</span></div>`;
+      }
+      return `
+        <div class="stage-demo-wall" aria-label="项目快闪墙">
+          ${items.map(renderDemoFlashCard).join("")}
+        </div>
+      `;
+    }
+
+    function renderDemoFlashCard(participant) {
+      const keywords = detailKeywords(participant).slice(0, 2).join(" · ");
+      return `
+        <div class="stage-demo-card">
+          <div class="demo-card-top">
+            <b>${escapeHTML(participant.nickname)}</b>
+            <em>${escapeHTML(participant.presence)}</em>
+          </div>
+          <strong>${escapeHTML(demoTitle(participant))}</strong>
+          <p>${escapeHTML(compactText(demoDescription(participant), 72))}</p>
+          ${keywords ? `<p class="stage-demo-next">${escapeHTML(keywords)}</p>` : ""}
+        </div>
+      `;
+    }
+
+    function renderDemoFlashQueue(limit) {
+      const queue = demoFlashPool({ includeCompleted: false, includeSkipped: false }).slice(0, limit);
+      if (!queue.length) {
+        return `<div class="stage-queue"><strong>快闪池已清空</strong><span>可以回到项目墙或进入下个正式环节。</span></div>`;
+      }
+      return `
+        <div class="stage-queue">
+          <strong>快闪候选</strong>
+          ${queue.map((participant, index) => `
+            <div class="stage-queue-item">
+              <span>${String(index + 1).padStart(2, "0")}</span>
+              <b>${escapeHTML(participant.nickname)}</b>
+              <em>${escapeHTML(demoTitle(participant))}</em>
+            </div>
+          `).join("")}
+        </div>
+      `;
+    }
+
+    function compactText(value, limit) {
+      const text = String(value || "").trim().replace(/\s+/g, " ");
+      if ([...text].length <= limit) return text;
+      return `${[...text].slice(0, limit).join("")}...`;
     }
 
     function renderKeywordWall(limit) {
@@ -6133,6 +6555,60 @@
       saveEventState();
       render();
       showToast(`已锁定：${participant.nickname} · ${topic.pptNo}`);
+    }
+
+    function showDemoWall() {
+      state.demoFlashParticipantId = null;
+      state.stageMode = "demoFlash";
+      saveEventState();
+      render();
+      showToast("投屏模式：项目墙");
+    }
+
+    function pickDemoFlashParticipant({ excludeCurrent = false } = {}) {
+      let pool = demoFlashPool({ includeCompleted: false, includeSkipped: false });
+      if (!pool.length) pool = demoFlashPool({ includeCompleted: false, includeSkipped: true });
+      if (excludeCurrent && state.demoFlashParticipantId && pool.length > 1) {
+        pool = pool.filter(participant => participant.id !== state.demoFlashParticipantId);
+      }
+      if (!pool.length) {
+        showToast("没有可快闪的项目。");
+        return;
+      }
+      const participant = pool[randomIndex(pool.length)];
+      state.demoFlashParticipantId = participant.id;
+      state.currentParticipantId = participant.id;
+      state.stageMode = "demoFlash";
+      saveEventState();
+      render();
+      showToast(`项目快闪：${participant.nickname}`);
+    }
+
+    function completeDemoFlashParticipant() {
+      const current = currentDemoFlashParticipant();
+      if (!current) return;
+      state.demoFlashCompletedIds = uniqueIds([...(state.demoFlashCompletedIds || []), current.id]);
+      state.demoFlashSkippedIds = (state.demoFlashSkippedIds || []).filter(id => id !== current.id);
+      state.demoFlashParticipantId = null;
+      state.stageMode = "demoFlash";
+      saveEventState();
+      render();
+      showToast(`已完成快闪：${current.nickname}`);
+    }
+
+    function skipDemoFlashParticipant() {
+      const current = currentDemoFlashParticipant();
+      if (!current) return;
+      state.demoFlashSkippedIds = uniqueIds([...(state.demoFlashSkippedIds || []), current.id]);
+      state.demoFlashParticipantId = null;
+      state.stageMode = "demoFlash";
+      saveEventState();
+      render();
+      showToast(`已跳过：${current.nickname}`);
+    }
+
+    function uniqueIds(ids) {
+      return Array.from(new Set(ids.map(String).filter(Boolean)));
     }
 
     function cancelPendingDraw() {
@@ -6435,6 +6911,12 @@
         return;
       }
 
+      const rosterFilterButton = event.target.closest("[data-roster-filter]");
+      if (rosterFilterButton) {
+        setRosterFilter(rosterFilterButton.dataset.rosterFilter);
+        return;
+      }
+
       const viewButton = event.target.closest("[data-view]");
       if (viewButton) {
         window.location.hash = viewButton.dataset.view === "stage" ? "stage" : "";
@@ -6461,6 +6943,11 @@
       if (action === "download-template") downloadTemplate();
       if (action === "export-log") exportLog();
       if (action === "open-stage") openStageWindow();
+      if (action === "demo-wall") showDemoWall();
+      if (action === "demo-random") pickDemoFlashParticipant();
+      if (action === "demo-reroll") pickDemoFlashParticipant({ excludeCurrent: true });
+      if (action === "demo-complete") completeDemoFlashParticipant();
+      if (action === "demo-skip") skipDemoFlashParticipant();
     });
 
     els.search.addEventListener("input", event => {
