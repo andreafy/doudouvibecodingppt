@@ -1,0 +1,955 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>兜来拼好桌 · 活动页优化设计稿</title>
+  <meta name="description" content="Builder Jam 项目桌活动页优化设计稿：聚焦本周项目、试玩反馈和往期档案。" />
+  <style>
+    :root {
+      --paper: #fffaf0;
+      --paper-deep: #f4ead8;
+      --ink: #242424;
+      --muted: #746c60;
+      --line: #242424;
+      --red: #f2554b;
+      --blue: #2760aa;
+      --green: #5fa469;
+      --mint: #d9f2da;
+      --yellow: #fff1a8;
+      --peach: #ffd4b8;
+      --lilac: #e6dcff;
+      --white: #fffef9;
+      --shadow: 5px 5px 0 var(--ink);
+      --shadow-soft: 3px 3px 0 rgba(36, 36, 36, 0.18);
+      --radius: 8px;
+      --font: "PingFang SC", "Microsoft YaHei", "Hiragino Sans GB", system-ui, sans-serif;
+      --display: "Trebuchet MS", "PingFang SC", system-ui, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      background:
+        linear-gradient(90deg, rgba(242, 85, 75, 0.12) 0 1px, transparent 1px 100%),
+        linear-gradient(180deg, rgba(39, 96, 170, 0.08) 0 1px, transparent 1px 100%),
+        var(--paper);
+      background-size: 34px 34px;
+      font-family: var(--font);
+      line-height: 1.45;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    button,
+    .button {
+      appearance: none;
+      border: 2px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--white);
+      box-shadow: var(--shadow-soft);
+      color: var(--ink);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 42px;
+      padding: 9px 14px;
+      font: 700 15px/1 var(--font);
+      transition: transform 120ms ease, box-shadow 120ms ease, background 120ms ease;
+    }
+
+    button:hover,
+    .button:hover {
+      transform: translate(2px, 2px);
+      box-shadow: 1px 1px 0 var(--ink);
+      background: var(--yellow);
+    }
+
+    .button.primary {
+      background: var(--red);
+      color: #fff;
+    }
+
+    .button.blue {
+      background: var(--blue);
+      color: #fff;
+    }
+
+    .button.ghost {
+      background: rgba(255, 254, 249, 0.7);
+      box-shadow: none;
+    }
+
+    .page-shell {
+      width: min(1180px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 18px 0 88px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      padding: 8px 0 18px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 220px;
+    }
+
+    .brand-avatar {
+      width: 48px;
+      height: 48px;
+      border: 2px solid var(--ink);
+      border-radius: 50%;
+      background: #111;
+      object-fit: cover;
+      image-rendering: pixelated;
+    }
+
+    .brand-name {
+      display: grid;
+      gap: 2px;
+    }
+
+    .brand-name strong {
+      font: 900 19px/1.05 var(--display);
+      letter-spacing: 0;
+    }
+
+    .brand-name span {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .nav {
+      display: flex;
+      justify-content: flex-end;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .nav a {
+      border: 2px solid var(--line);
+      border-radius: var(--radius);
+      background: rgba(255, 254, 249, 0.72);
+      padding: 8px 11px;
+      font-weight: 700;
+      font-size: 14px;
+    }
+
+    .hero {
+      min-height: 520px;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 360px;
+      gap: 34px;
+      align-items: stretch;
+      padding: 34px 0 30px;
+    }
+
+    .hero-main {
+      position: relative;
+      display: grid;
+      align-content: center;
+      padding: 34px;
+      border: 3px solid var(--line);
+      border-radius: var(--radius);
+      background:
+        linear-gradient(135deg, rgba(255, 241, 168, 0.8), rgba(255, 254, 249, 0.72)),
+        var(--white);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .hero-main::after {
+      content: "";
+      position: absolute;
+      right: -42px;
+      bottom: -56px;
+      width: 230px;
+      height: 230px;
+      border: 3px dashed rgba(39, 96, 170, 0.45);
+      border-radius: 50%;
+      background: rgba(230, 220, 255, 0.45);
+    }
+
+    .eyebrow {
+      width: max-content;
+      max-width: 100%;
+      margin: 0 0 18px;
+      border: 2px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--lilac);
+      box-shadow: var(--shadow-soft);
+      padding: 7px 10px;
+      font-weight: 900;
+      transform: rotate(-1deg);
+    }
+
+    h1 {
+      position: relative;
+      z-index: 1;
+      max-width: 720px;
+      margin: 0;
+      font: 900 clamp(44px, 7vw, 86px)/0.96 var(--display);
+      letter-spacing: 0;
+    }
+
+    .hero-copy {
+      position: relative;
+      z-index: 1;
+      max-width: 720px;
+      margin: 22px 0 0;
+      color: #39342e;
+      font-size: clamp(19px, 2vw, 25px);
+      font-weight: 700;
+    }
+
+    .hero-actions {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 28px;
+    }
+
+    .today-card {
+      display: grid;
+      gap: 14px;
+      align-content: start;
+    }
+
+    .table-ticket {
+      border: 3px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--white);
+      box-shadow: var(--shadow);
+      padding: 20px;
+    }
+
+    .ticket-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 14px;
+      margin-bottom: 18px;
+    }
+
+    .ticket-top h2 {
+      margin: 0;
+      font: 900 31px/1.02 var(--display);
+    }
+
+    .ticket-avatar {
+      width: 70px;
+      height: 70px;
+      object-fit: cover;
+      image-rendering: pixelated;
+      border: 2px solid var(--ink);
+      border-radius: 50%;
+      background: #111;
+    }
+
+    .ticket-list {
+      display: grid;
+      gap: 10px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .ticket-list li {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      border-bottom: 2px dashed rgba(36, 36, 36, 0.22);
+      padding-bottom: 8px;
+      font-size: 16px;
+      font-weight: 700;
+    }
+
+    .ticket-list b {
+      font-size: 21px;
+    }
+
+    .playbook {
+      border: 2px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--mint);
+      box-shadow: var(--shadow-soft);
+      padding: 16px;
+    }
+
+    .playbook h3,
+    .feedback-note h3,
+    .section-kicker {
+      margin: 0;
+      font: 900 18px/1 var(--display);
+    }
+
+    .playbook ol {
+      margin: 12px 0 0;
+      padding-left: 23px;
+      color: #333;
+      font-weight: 700;
+    }
+
+    .playbook li + li {
+      margin-top: 6px;
+    }
+
+    .section {
+      margin-top: 44px;
+    }
+
+    .section-head {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 24px;
+      margin-bottom: 18px;
+    }
+
+    .section-head h2 {
+      margin: 8px 0 0;
+      font: 900 clamp(32px, 4vw, 54px)/1 var(--display);
+      letter-spacing: 0;
+    }
+
+    .section-note {
+      max-width: 420px;
+      margin: 0;
+      color: var(--muted);
+      font-size: 16px;
+      font-weight: 700;
+      text-align: right;
+    }
+
+    .weekly-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 312px;
+      gap: 22px;
+      align-items: start;
+    }
+
+    .project-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+    }
+
+    .project-card {
+      position: relative;
+      min-height: 318px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      border: 3px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--white);
+      box-shadow: var(--shadow);
+      padding: 18px;
+    }
+
+    .project-card:nth-child(2) {
+      background: #fff6df;
+    }
+
+    .project-card:nth-child(3) {
+      background: #f7fbff;
+    }
+
+    .project-card:nth-child(4) {
+      background: #fff5f5;
+    }
+
+    .project-meta {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: flex-start;
+    }
+
+    .note-id {
+      color: var(--muted);
+      font: 800 13px/1 var(--display);
+      text-transform: uppercase;
+    }
+
+    .status {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 28px;
+      border: 2px solid var(--line);
+      border-radius: var(--radius);
+      padding: 4px 8px;
+      background: var(--yellow);
+      font-size: 13px;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+
+    .status.feedback {
+      background: var(--red);
+      color: #fff;
+    }
+
+    .status.soon {
+      background: var(--lilac);
+    }
+
+    .project-card h3 {
+      margin: 0;
+      font: 900 30px/1.05 var(--display);
+      letter-spacing: 0;
+    }
+
+    .maker {
+      color: var(--muted);
+      font-size: 14px;
+      font-weight: 800;
+    }
+
+    .summary {
+      margin: 0;
+      color: #34312d;
+      font-size: 17px;
+      font-weight: 700;
+    }
+
+    .ask-box {
+      border: 2px dashed var(--line);
+      border-radius: var(--radius);
+      background: rgba(255, 255, 255, 0.72);
+      padding: 10px 11px;
+      font-size: 15px;
+    }
+
+    .ask-box strong {
+      color: var(--red);
+    }
+
+    .tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+      margin-top: 2px;
+    }
+
+    .tag {
+      border: 1.5px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--paper);
+      padding: 3px 7px;
+      font-size: 12px;
+      font-weight: 900;
+    }
+
+    .card-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: auto;
+      padding-top: 8px;
+    }
+
+    .card-actions .button {
+      min-height: 36px;
+      padding: 8px 10px;
+      font-size: 13px;
+    }
+
+    .feedback-note {
+      position: sticky;
+      top: 18px;
+      border: 3px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--peach);
+      box-shadow: var(--shadow);
+      padding: 18px;
+    }
+
+    .feedback-note h3 {
+      font-size: 25px;
+    }
+
+    .feedback-note ul {
+      display: grid;
+      gap: 10px;
+      margin: 14px 0 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .feedback-note li {
+      border: 2px dashed rgba(36, 36, 36, 0.45);
+      border-radius: var(--radius);
+      background: rgba(255, 254, 249, 0.7);
+      padding: 10px;
+      font-weight: 800;
+    }
+
+    .spotlight {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+      border: 3px solid var(--red);
+      border-radius: var(--radius);
+      background: #fff7d7;
+      box-shadow: 7px 7px 0 var(--red);
+      padding: 20px;
+    }
+
+    .spotlight h3 {
+      margin: 0;
+      font: 900 36px/1 var(--display);
+    }
+
+    .spotlight p {
+      margin: 10px 0 0;
+      font-weight: 700;
+      font-size: 17px;
+    }
+
+    .spotlight-panel {
+      border: 2px dashed var(--line);
+      border-radius: var(--radius);
+      background: var(--white);
+      padding: 14px;
+    }
+
+    .spotlight-panel h4 {
+      margin: 0 0 8px;
+      font: 900 18px/1 var(--display);
+      color: var(--red);
+    }
+
+    .archive {
+      display: grid;
+      grid-template-columns: 260px minmax(0, 1fr);
+      gap: 20px;
+      align-items: start;
+    }
+
+    .archive-card {
+      border: 3px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--white);
+      box-shadow: var(--shadow);
+      padding: 18px;
+    }
+
+    .archive-card h3 {
+      margin: 0;
+      font: 900 30px/1 var(--display);
+    }
+
+    .archive-card p {
+      margin: 10px 0 0;
+      color: var(--muted);
+      font-weight: 700;
+    }
+
+    .archive-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .archive-row {
+      display: grid;
+      grid-template-columns: 112px 1fr auto;
+      gap: 12px;
+      align-items: center;
+      border: 2px solid var(--line);
+      border-radius: var(--radius);
+      background: rgba(255, 254, 249, 0.82);
+      padding: 12px;
+    }
+
+    .archive-row strong {
+      font: 900 17px/1 var(--display);
+    }
+
+    .archive-row span {
+      color: var(--muted);
+      font-size: 14px;
+      font-weight: 800;
+    }
+
+    .signup-band {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 18px;
+      align-items: center;
+      border: 3px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--lilac);
+      box-shadow: var(--shadow);
+      padding: 24px;
+    }
+
+    .signup-band h2 {
+      margin: 0;
+      font: 900 clamp(30px, 4vw, 48px)/1 var(--display);
+    }
+
+    .signup-band p {
+      margin: 8px 0 0;
+      color: #3a3347;
+      font-size: 17px;
+      font-weight: 700;
+    }
+
+    .mobile-dock {
+      position: fixed;
+      left: 12px;
+      right: 12px;
+      bottom: 12px;
+      z-index: 20;
+      display: none;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      border: 2px solid var(--line);
+      border-radius: var(--radius);
+      background: rgba(255, 250, 240, 0.94);
+      box-shadow: var(--shadow-soft);
+      padding: 8px;
+      backdrop-filter: blur(10px);
+    }
+
+    .mobile-dock a {
+      display: grid;
+      place-items: center;
+      min-height: 38px;
+      border-radius: var(--radius);
+      background: var(--white);
+      border: 2px solid var(--line);
+      font-size: 13px;
+      font-weight: 900;
+    }
+
+    @media (max-width: 980px) {
+      .hero,
+      .weekly-layout,
+      .archive,
+      .signup-band {
+        grid-template-columns: 1fr;
+      }
+
+      .hero {
+        min-height: auto;
+      }
+
+      .project-grid,
+      .spotlight {
+        grid-template-columns: 1fr;
+      }
+
+      .feedback-note {
+        position: static;
+      }
+
+      .section-note {
+        text-align: left;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .page-shell {
+        width: min(100% - 22px, 1180px);
+        padding-bottom: 92px;
+      }
+
+      .topbar,
+      .section-head {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .nav {
+        justify-content: flex-start;
+      }
+
+      .hero-main {
+        padding: 24px 18px;
+      }
+
+      h1 {
+        font-size: 44px;
+      }
+
+      .hero-copy {
+        font-size: 19px;
+      }
+
+      .ticket-top {
+        align-items: center;
+      }
+
+      .archive-row {
+        grid-template-columns: 1fr;
+      }
+
+      .mobile-dock {
+        display: grid;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="page-shell">
+    <header class="topbar">
+      <a class="brand" href="#">
+        <img class="brand-avatar" src="assets/avatars/doudou-top.png" alt="兜兜头像" />
+        <span class="brand-name">
+          <strong>兜来拼好桌</strong>
+          <span>Builder Jam 项目桌</span>
+        </span>
+      </a>
+      <nav class="nav" aria-label="页面导航">
+        <a href="#weekly">本周项目</a>
+        <a href="#feedback">急需反馈</a>
+        <a href="#archive">往期档案</a>
+        <a href="#signup">下次上桌</a>
+      </nav>
+    </header>
+
+    <section class="hero" aria-labelledby="page-title">
+      <div class="hero-main">
+        <p class="eyebrow">Builder Jam #6 · 项目试玩桌</p>
+        <h1 id="page-title">今晚先试玩 4 个项目，给一句有用反馈。</h1>
+        <p class="hero-copy">别急着把 27 张卡全看完。先从本周上桌开始：打开、试玩、挑一个具体点留言。</p>
+        <div class="hero-actions">
+          <a class="button primary" href="#weekly">直接看本周项目</a>
+          <a class="button blue" href="#feedback">先帮急需反馈</a>
+          <a class="button ghost" href="./builder-jam-signup-conditional.html">我也想上桌</a>
+        </div>
+      </div>
+
+      <aside class="today-card" aria-label="今日桌牌">
+        <div class="table-ticket">
+          <div class="ticket-top">
+            <h2>今日桌牌</h2>
+            <img class="ticket-avatar" src="assets/avatars/doudou-crew.png" alt="兜兜" />
+          </div>
+          <ul class="ticket-list">
+            <li><span>本周上桌</span><b>04</b></li>
+            <li><span>急需反馈</span><b>01</b></li>
+            <li><span>往期项目</span><b>20</b></li>
+            <li><span>敬请期待</span><b>02</b></li>
+          </ul>
+        </div>
+        <div class="playbook">
+          <h3>今晚怎么看</h3>
+          <ol>
+            <li>先打开一个本周项目。</li>
+            <li>只反馈一个具体问题。</li>
+            <li>想继续聊，再复制卡片发群里。</li>
+          </ol>
+        </div>
+      </aside>
+    </section>
+
+    <section class="section" id="weekly">
+      <div class="section-head">
+        <div>
+          <p class="section-kicker">本周上桌</p>
+          <h2>先看这 4 张</h2>
+        </div>
+        <p class="section-note">主线只放本周要聊的项目。状态、顺序、数字都作为人工维护内容处理。</p>
+      </div>
+
+      <div class="weekly-layout">
+        <div class="project-grid">
+          <article class="project-card">
+            <div class="project-meta">
+              <span class="note-id">note 01</span>
+              <span class="status">本周上桌</span>
+            </div>
+            <h3>世界旅行地图</h3>
+            <div class="maker">冰块儿 · Builder Jam #6</div>
+            <p class="summary">给朋友的生日礼物：一个可视化的世界旅行地图网站。</p>
+            <div class="ask-box"><strong>想看：</strong>视觉交互是否够温暖，旅行记忆有没有被很好地呈现。</div>
+            <div class="tags">
+              <span class="tag">视觉交互</span>
+              <span class="tag">地图</span>
+              <span class="tag">礼物</span>
+            </div>
+            <div class="card-actions">
+              <a class="button primary" href="https://oyster-amusement-park.vercel.app/" target="_blank" rel="noreferrer">打开项目</a>
+              <button type="button">复制反馈模板</button>
+            </div>
+          </article>
+
+          <article class="project-card">
+            <div class="project-meta">
+              <span class="note-id">note 02</span>
+              <span class="status">本周上桌</span>
+            </div>
+            <h3>Lexispace</h3>
+            <div class="maker">鹤仔 · Builder Jam #6</div>
+            <p class="summary">理工男生永远的浪漫，3D 空间猜词游戏。</p>
+            <div class="ask-box"><strong>想看：</strong>试玩后告诉我哪里卡、哪里还可以继续改进。</div>
+            <div class="tags">
+              <span class="tag">3D</span>
+              <span class="tag">猜词</span>
+              <span class="tag">游戏</span>
+            </div>
+            <div class="card-actions">
+              <a class="button primary" href="https://lexispace.streets.city" target="_blank" rel="noreferrer">打开项目</a>
+              <button type="button">复制反馈模板</button>
+            </div>
+          </article>
+
+          <article class="project-card">
+            <div class="project-meta">
+              <span class="note-id">note 03</span>
+              <span class="status">本周上桌</span>
+            </div>
+            <h3>题呼呼</h3>
+            <div class="maker">圈圈烃 · Builder Jam #6</div>
+            <p class="summary">一款 AI 驱动的知识游戏化学习软件。</p>
+            <div class="ask-box"><strong>想看：</strong>哪些功能该删、该加，以及你明天还会不会打开。</div>
+            <div class="tags">
+              <span class="tag">AI学习</span>
+              <span class="tag">知识游戏</span>
+              <span class="tag">学习工具</span>
+            </div>
+            <div class="card-actions">
+              <button class="primary" type="button">看体验方式</button>
+              <button type="button">复制反馈模板</button>
+            </div>
+          </article>
+
+          <article class="project-card">
+            <div class="project-meta">
+              <span class="note-id">note 04</span>
+              <span class="status">本周上桌</span>
+            </div>
+            <h3>先见 Foreseen</h3>
+            <div class="maker">钊钊 · Builder Jam #6</div>
+            <p class="summary">一个被封印在书里的人，带着一些有趣的 agent 魂。</p>
+            <div class="ask-box"><strong>想看：</strong>啥都想听：试玩、吐槽、拍我都可以。</div>
+            <div class="tags">
+              <span class="tag">互动叙事</span>
+              <span class="tag">Agent</span>
+              <span class="tag">隐藏款</span>
+            </div>
+            <div class="card-actions">
+              <a class="button primary" href="https://foreseen.okethan.top" target="_blank" rel="noreferrer">打开项目</a>
+              <button type="button">复制反馈模板</button>
+            </div>
+          </article>
+        </div>
+
+        <aside class="feedback-note" aria-label="反馈提示">
+          <h3>一句有用反馈</h3>
+          <ul>
+            <li>我最喜欢的是：______</li>
+            <li>我最卡的是：______</li>
+            <li>我建议下一步：______</li>
+          </ul>
+        </aside>
+      </div>
+    </section>
+
+    <section class="section" id="feedback">
+      <div class="section-head">
+        <div>
+          <p class="section-kicker">急需反馈</p>
+          <h2>这张欢迎直接拍</h2>
+        </div>
+      </div>
+
+      <article class="spotlight">
+        <div>
+          <span class="status feedback">急需反馈</span>
+          <h3>異議あり!</h3>
+          <p>AI 迷雾侦探游戏，玩家在案件里推理、追问、找漏洞。</p>
+          <p><strong>创作者：</strong>大叉 · Builder Jam #1</p>
+          <div class="card-actions">
+            <a class="button primary" href="https://www.casefile.games" target="_blank" rel="noreferrer">打开项目</a>
+            <button type="button">复制卡片</button>
+          </div>
+        </div>
+        <div class="spotlight-panel">
+          <h4>重点反馈点</h4>
+          <p>生成案件是否符合预期？可玩性和互动性够不够？第一次进入时有没有明确的下一步？</p>
+          <p><strong>邀请码：</strong>Merging</p>
+        </div>
+      </article>
+    </section>
+
+    <section class="section" id="archive">
+      <div class="section-head">
+        <div>
+          <p class="section-kicker">往期档案</p>
+          <h2>想翻旧桌再进来</h2>
+        </div>
+        <p class="section-note">往期内容保留发现感，但不和本周主任务抢首屏注意力。</p>
+      </div>
+
+      <div class="archive">
+        <div class="archive-card">
+          <h3>20 张已拼桌</h3>
+          <p>按 Builder Jam 分组，默认只露出项目名和一句话。需要时再点开完整卡片。</p>
+        </div>
+        <div class="archive-list">
+          <article class="archive-row">
+            <strong>Jam #5</strong>
+            <span>液态围棋、晚了吧、OpenDev、VibeAround、我妈用了都说好</span>
+            <button type="button">展开</button>
+          </article>
+          <article class="archive-row">
+            <strong>Jam #4</strong>
+            <span>贷款计算器、这班没白上、安心开饭、狗叫模拟器</span>
+            <button type="button">展开</button>
+          </article>
+          <article class="archive-row">
+            <strong>Jam #1-3</strong>
+            <span>NBTI、赛博澡堂、梦田 App、3D 大丽花、VC 创投大富翁等</span>
+            <button type="button">展开</button>
+          </article>
+          <article class="archive-row">
+            <strong>敬请期待</strong>
+            <span>以公园之名、一个抽象的电台</span>
+            <span class="status soon">占座中</span>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section signup-band" id="signup">
+      <div>
+        <h2>下次也把你的项目端上来。</h2>
+        <p>没做完也可以。只要能说清楚在做什么，带着草稿、Demo 或概念就能先上桌。</p>
+      </div>
+      <a class="button blue" href="./builder-jam-signup-conditional.html">去报名</a>
+    </section>
+  </main>
+
+  <nav class="mobile-dock" aria-label="移动端快捷导航">
+    <a href="#weekly">本周</a>
+    <a href="#feedback">反馈</a>
+    <a href="#signup">报名</a>
+  </nav>
+</body>
+</html>

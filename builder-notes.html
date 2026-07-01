@@ -1,0 +1,1780 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>兜来拼好桌 · Builder 项目兜</title>
+<meta name="description" content="兜来拼好桌：把 Builder 们的项目先兜在一张桌上，来都来了，看看之前的朋友们最近在做什么。" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Kalam:wght@400;700&family=Patrick+Hand&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper:#fdfbf7;
+    --ink:#2d2d2d;
+    --muted:#e5e0d8;
+    --red:#ff4d4d;
+    --blue:#2d5da1;
+    --sage:#7aa874;
+    --avatar:#f4a261;
+    --postit:#fff9c4;
+    --green:#bdeca6;
+    --orange:#ffd49a;
+    --gray:#f2eee6;
+    --white:#fffefb;
+    --shadow:4px 4px 0 0 var(--ink);
+    --shadow-soft:3px 3px 0 0 rgba(45,45,45,.16);
+    --shadow-big:8px 8px 0 0 var(--ink);
+    --wobbly:255px 15px 225px 15px / 15px 225px 15px 255px;
+    --wobbly-md:18px 34px 22px 28px / 26px 19px 32px 18px;
+    --wobbly-lg:42px 26px 36px 24px / 30px 44px 22px 36px;
+    --font-title:"Kalam", "ZCOOL KuaiLe", cursive;
+    --font-body:"Patrick Hand", "ZCOOL KuaiLe", "PingFang SC", cursive;
+  }
+
+  * { box-sizing:border-box; }
+  html { scroll-behavior:smooth; }
+  body {
+    margin:0;
+    min-height:100vh;
+    color:var(--ink);
+    background:
+      radial-gradient(var(--muted) 1px, transparent 1px),
+      linear-gradient(180deg, #fffdf8 0%, var(--paper) 100%);
+    background-size:24px 24px, 100% 100%;
+    font-family:var(--font-body);
+    font-size:21px;
+    line-height:1.38;
+  }
+  body::before {
+    content:"";
+    position:fixed;
+    inset:0;
+    pointer-events:none;
+    opacity:.35;
+    background:
+      linear-gradient(90deg, transparent 0 72px, rgba(255,77,77,.18) 72px 74px, transparent 74px),
+      repeating-linear-gradient(180deg, transparent 0 31px, rgba(45,45,45,.06) 31px 32px);
+    z-index:-1;
+  }
+  a { color:inherit; }
+  button { font:inherit; color:inherit; cursor:pointer; }
+
+  .page {
+    width:min(1120px, calc(100% - 32px));
+    margin:0 auto;
+    padding:22px 0 84px;
+  }
+
+  .topbar {
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:18px;
+    padding:12px 0 28px;
+  }
+  .brand {
+    display:inline-flex;
+    align-items:center;
+    gap:12px;
+    text-decoration:none;
+    transform:rotate(-1deg);
+  }
+  .brand-mark {
+    display:grid;
+    place-items:center;
+    width:52px;
+    height:46px;
+    background:var(--postit);
+    border:3px solid var(--ink);
+    border-radius:var(--wobbly);
+    box-shadow:var(--shadow);
+    font-family:var(--font-title);
+    font-weight:700;
+    font-size:26px;
+  }
+  .brand-text {
+    display:flex;
+    flex-direction:column;
+    line-height:1;
+  }
+  .brand-title {
+    font-family:var(--font-title);
+    font-weight:700;
+    font-size:25px;
+  }
+  .brand-sub {
+    margin-top:3px;
+    color:rgba(45,45,45,.62);
+    font-size:17px;
+  }
+  .nav {
+    display:flex;
+    align-items:center;
+    gap:10px;
+    flex-wrap:wrap;
+    justify-content:flex-end;
+  }
+  .nav a,
+  .pill {
+    display:inline-flex;
+    align-items:center;
+    min-height:42px;
+    padding:8px 14px;
+    border:2px dashed var(--ink);
+    border-radius:var(--wobbly);
+    background:rgba(255,255,255,.55);
+    text-decoration:none;
+    font-size:18px;
+  }
+  .pill {
+    background:var(--postit);
+    border-style:solid;
+    transform:rotate(1deg);
+  }
+  .manual-update {
+    display:block;
+    margin-top:13px;
+    padding:10px 12px;
+    background:#fffaf0;
+    border:2px dashed var(--ink);
+    border-radius:var(--wobbly-md);
+    color:rgba(45,45,45,.72);
+    font-size:19px;
+  }
+
+  .hero {
+    position:relative;
+    display:grid;
+    grid-template-columns:minmax(0, 1fr) 330px;
+    gap:42px;
+    align-items:center;
+    padding:48px 0 30px;
+  }
+  .hero::after {
+    content:"";
+    position:absolute;
+    left:31%;
+    bottom:18px;
+    width:250px;
+    height:82px;
+    border-bottom:4px dashed var(--blue);
+    border-radius:50%;
+    transform:rotate(-5deg);
+    opacity:.34;
+    pointer-events:none;
+  }
+  .kicker {
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    margin-bottom:16px;
+    padding:8px 13px;
+    background:var(--postit);
+    border:3px solid var(--ink);
+    border-radius:var(--wobbly);
+    box-shadow:var(--shadow);
+    transform:rotate(-2deg);
+    font-size:19px;
+  }
+  h1 {
+    margin:0;
+    max-width:760px;
+    font-family:var(--font-title);
+    font-size:clamp(58px, 9vw, 104px);
+    line-height:.95;
+    letter-spacing:0;
+  }
+  .hero-title-wrap {
+    position:relative;
+    max-width:760px;
+    display:grid;
+    grid-template-columns:minmax(0, max-content) minmax(190px, 260px);
+    align-items:center;
+    gap:22px;
+  }
+  .hero-title-wrap h1 {
+    max-width:none;
+  }
+  .dou-penguin {
+    display:block;
+    width:100%;
+    height:auto;
+    image-rendering:pixelated;
+    filter:drop-shadow(8px 8px 0 rgba(45,45,45,.18));
+    transform:rotate(1deg);
+  }
+  .hero strong {
+    color:var(--red);
+    font-weight:700;
+    text-decoration:underline;
+    text-decoration-style:wavy;
+    text-decoration-thickness:3px;
+    text-underline-offset:8px;
+  }
+  .hero-copy {
+    max-width:760px;
+    margin:22px 0 0;
+    font-size:clamp(21px, 2.2vw, 27px);
+    line-height:1.28;
+  }
+  .hero-actions {
+    display:flex;
+    flex-wrap:wrap;
+    gap:14px;
+    margin-top:30px;
+  }
+  .btn {
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    min-height:52px;
+    padding:10px 18px;
+    border:3px solid var(--ink);
+    border-radius:var(--wobbly);
+    background:var(--white);
+    box-shadow:var(--shadow);
+    text-decoration:none;
+    font-size:24px;
+    transition:transform .1s, box-shadow .1s, background .1s, color .1s;
+  }
+  .btn:hover {
+    background:var(--red);
+    color:#fff;
+    transform:translate(2px, 2px) rotate(-1deg);
+    box-shadow:2px 2px 0 0 var(--ink);
+  }
+  .btn.secondary:hover { background:var(--blue); }
+  .btn:active {
+    transform:translate(4px, 4px);
+    box-shadow:0 0 0 0 var(--ink);
+  }
+
+  .note-card {
+    position:relative;
+    padding:28px 22px 22px;
+    background:var(--white);
+    border:3px solid var(--ink);
+    border-radius:var(--wobbly-lg);
+    box-shadow:var(--shadow-big);
+    transform:rotate(1.5deg);
+  }
+  .note-card::before {
+    content:"";
+    position:absolute;
+    top:-17px;
+    left:50%;
+    width:116px;
+    height:30px;
+    background:rgba(190,190,190,.42);
+    border:2px solid rgba(45,45,45,.2);
+    transform:translateX(-50%) rotate(-3deg);
+  }
+  .note-card h2 {
+    margin:0 0 10px;
+    font-family:var(--font-title);
+    font-size:36px;
+    line-height:1.08;
+  }
+  .note-card p {
+    margin:0 0 10px;
+    color:rgba(45,45,45,.76);
+    font-size:22px;
+  }
+  .scribble-arrow {
+    position:absolute;
+    left:-68px;
+    top:38px;
+    width:82px;
+    height:58px;
+    transform:rotate(-8deg);
+  }
+  .scribble-arrow path,
+  .scribble-arrow polyline {
+    fill:none;
+    stroke:var(--red);
+    stroke-width:4;
+    stroke-linecap:round;
+    stroke-linejoin:round;
+    stroke-dasharray:8 7;
+  }
+
+  .stats {
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(150px, 1fr));
+    gap:16px;
+    margin-top:18px;
+  }
+  .stat {
+    position:relative;
+    min-height:116px;
+    padding:18px 16px;
+    background:var(--white);
+    border:3px solid var(--ink);
+    border-radius:var(--wobbly-md);
+    box-shadow:var(--shadow);
+    transform:rotate(var(--tilt));
+  }
+  .stat::after {
+    content:"";
+    position:absolute;
+    top:12px;
+    right:14px;
+    width:14px;
+    height:14px;
+    border-radius:50%;
+    background:var(--red);
+    border:2px solid var(--ink);
+  }
+  .stat b {
+    display:block;
+    font-family:var(--font-title);
+    font-size:44px;
+    line-height:1;
+  }
+  .stat span {
+    display:block;
+    margin-top:5px;
+    color:rgba(45,45,45,.72);
+  }
+
+  .section {
+    margin-top:56px;
+  }
+  .section-head {
+    display:flex;
+    align-items:flex-end;
+    justify-content:space-between;
+    gap:22px;
+    margin-bottom:22px;
+  }
+  .section-title {
+    margin:0;
+    font-family:var(--font-title);
+    font-size:clamp(42px, 5vw, 64px);
+    line-height:1;
+  }
+  .section-note {
+    max-width:360px;
+    margin:0;
+    text-align:right;
+    color:rgba(45,45,45,.7);
+    font-size:22px;
+  }
+  .sticky-label {
+    display:inline-flex;
+    margin-bottom:10px;
+    padding:6px 12px;
+    background:var(--postit);
+    border:2px solid var(--ink);
+    border-radius:var(--wobbly);
+    box-shadow:2px 2px 0 0 var(--ink);
+    transform:rotate(-1deg);
+    font-size:18px;
+  }
+
+  .filters {
+    display:flex;
+    flex-wrap:wrap;
+    gap:12px;
+    margin-bottom:24px;
+  }
+  .filter-btn {
+    min-height:44px;
+    padding:7px 15px;
+    border:3px solid var(--ink);
+    border-radius:var(--wobbly);
+    background:var(--white);
+    box-shadow:3px 3px 0 0 var(--ink);
+    font-size:22px;
+    transition:transform .1s, box-shadow .1s, background .1s;
+  }
+  .filter-btn:hover {
+    transform:rotate(1deg);
+  }
+  .filter-btn.active {
+    background:var(--postit);
+    transform:translate(3px, 3px) rotate(-1deg);
+    box-shadow:0 0 0 0 var(--ink);
+  }
+  .filter-count {
+    display:inline-grid;
+    place-items:center;
+    min-width:26px;
+    height:26px;
+    margin-left:8px;
+    padding:0 6px;
+    border:2px solid var(--ink);
+    border-radius:var(--wobbly);
+    background:rgba(255,255,255,.72);
+    font-size:17px;
+    line-height:1;
+  }
+  .filter-btn[data-filter="feedback"] {
+    position:relative;
+    color:var(--red);
+    border-color:var(--red);
+    background:#fffaf0;
+    transform:rotate(-1deg);
+  }
+  .filter-btn[data-filter="feedback"]::after {
+    content:"!";
+    position:absolute;
+    right:-8px;
+    top:-13px;
+    display:grid;
+    place-items:center;
+    width:25px;
+    height:25px;
+    border:2px solid var(--ink);
+    border-radius:53% 47% 51% 49% / 44% 54% 46% 56%;
+    background:var(--red);
+    color:#fff;
+    font-family:var(--font-title);
+    font-weight:700;
+    line-height:1;
+  }
+
+  .project-grid {
+    display:grid;
+    grid-template-columns:repeat(auto-fill, minmax(284px, 1fr));
+    gap:24px;
+    align-items:stretch;
+  }
+  .project-stack {
+    display:grid;
+    gap:38px;
+  }
+  .project-group {
+    display:grid;
+    gap:15px;
+  }
+  .project-group-head {
+    display:flex;
+    align-items:flex-end;
+    justify-content:space-between;
+    gap:18px;
+    padding:0 2px;
+  }
+  .project-group-title {
+    margin:0;
+    font-family:var(--font-title);
+    font-size:34px;
+    line-height:1;
+  }
+  .project-group-note {
+    margin:0;
+    color:rgba(45,45,45,.65);
+    font-size:20px;
+    text-align:right;
+  }
+  .project-card {
+    position:relative;
+    min-height:410px;
+    display:flex;
+    flex-direction:column;
+    padding:22px;
+    background:var(--white);
+    border:3px solid var(--ink);
+    border-radius:var(--wobbly-md);
+    box-shadow:var(--shadow);
+    transform:rotate(var(--tilt));
+    transition:transform .12s, box-shadow .12s;
+  }
+  .project-card:hover {
+    transform:translate(-2px, -2px) rotate(calc(var(--tilt) * -1));
+    box-shadow:7px 7px 0 0 var(--ink);
+  }
+  .project-card::before {
+    content:"";
+    position:absolute;
+    top:-12px;
+    left:42%;
+    width:86px;
+    height:24px;
+    background:rgba(190,190,190,.36);
+    border:1px solid rgba(45,45,45,.16);
+    transform:rotate(var(--tape));
+  }
+  .project-card.placeholder {
+    background:var(--postit);
+    border-style:dashed;
+  }
+  .project-card.is-feedback {
+    border-color:var(--red);
+    border-style:dashed;
+    box-shadow:7px 7px 0 0 var(--red);
+  }
+  .project-card.is-feedback::after {
+    content:"需要真人试玩";
+    position:absolute;
+    top:54px;
+    right:-16px;
+    z-index:2;
+    padding:5px 12px;
+    border:2px solid var(--ink);
+    border-radius:var(--wobbly);
+    background:var(--red);
+    color:#fff;
+    box-shadow:3px 3px 0 0 var(--ink);
+    transform:rotate(7deg);
+    font-size:18px;
+  }
+  .card-top {
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:10px;
+    margin-bottom:12px;
+  }
+  .status {
+    flex:0 0 auto;
+    display:inline-flex;
+    align-items:center;
+    min-height:33px;
+    padding:5px 10px;
+    border:2px solid var(--ink);
+    border-radius:var(--wobbly);
+    background:var(--gray);
+    font-size:18px;
+  }
+  .status.week { background:var(--orange); }
+  .status.feedback { background:var(--green); }
+  .status.developing { background:#d8f078; }
+  .status.rework { background:#ffd6a8; }
+  .status.soon { background:var(--postit); }
+  .project-no {
+    color:rgba(45,45,45,.55);
+    font-size:18px;
+  }
+  .project-title {
+    margin:0;
+    font-family:var(--font-title);
+    font-size:34px;
+    line-height:1.03;
+  }
+  .project-event {
+    display:inline-flex;
+    width:max-content;
+    max-width:100%;
+    margin-top:10px;
+    padding:4px 9px;
+    border:2px dashed var(--ink);
+    border-radius:var(--wobbly);
+    background:rgba(255,255,255,.62);
+    color:rgba(45,45,45,.72);
+    font-size:17px;
+  }
+  .project-desc {
+    margin:12px 0 0;
+    color:rgba(45,45,45,.82);
+    font-size:21px;
+  }
+  .round-update-strip {
+    display:grid;
+    gap:5px;
+    margin-top:13px;
+    padding:10px 12px;
+    background:#eef7ff;
+    border:2px solid var(--blue);
+    border-radius:var(--wobbly-md);
+    box-shadow:2px 2px 0 0 rgba(45,45,45,.16);
+  }
+  .round-update-strip span {
+    color:var(--blue);
+    font-size:16px;
+  }
+  .round-update-strip b {
+    font-weight:400;
+    font-size:19px;
+    line-height:1.22;
+  }
+  .need {
+    margin-top:15px;
+    padding:12px 13px;
+    background:#f8f2e8;
+    border:2px dashed var(--ink);
+    border-radius:var(--wobbly-md);
+    font-size:20px;
+  }
+  .project-card.is-feedback .need {
+    border-color:var(--red);
+    background:#fff7d7;
+  }
+  .project-card.is-feedback .need::before {
+    content:"快来看看 ↓";
+    display:block;
+    width:max-content;
+    margin:-2px 0 7px auto;
+    color:var(--red);
+    font-family:var(--font-title);
+    font-size:22px;
+    transform:rotate(-2deg);
+  }
+  .need b {
+    color:var(--red);
+    font-weight:400;
+  }
+  .tags {
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    margin-top:14px;
+  }
+  .tag {
+    display:inline-flex;
+    align-items:center;
+    padding:4px 9px;
+    background:var(--postit);
+    border:2px solid var(--ink);
+    border-radius:var(--wobbly);
+    font-size:17px;
+  }
+  .card-foot {
+    margin-top:auto;
+    padding-top:16px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+  }
+  .card-actions-inline {
+    flex:0 0 auto;
+    display:flex;
+    align-items:center;
+    justify-content:flex-end;
+    gap:8px;
+    flex-wrap:wrap;
+  }
+  .maker {
+    min-width:0;
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  .avatar {
+    flex:0 0 auto;
+    display:grid;
+    place-items:center;
+    width:34px;
+    height:34px;
+    border:2px solid var(--ink);
+    border-radius:47% 53% 46% 54% / 55% 43% 57% 45%;
+    background:var(--avatar);
+    color:var(--ink);
+    font-size:19px;
+  }
+  .maker span:last-child {
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+  }
+  .open-card {
+    flex:0 0 auto;
+    min-height:39px;
+    padding:5px 12px;
+    border:2px solid var(--ink);
+    border-radius:var(--wobbly);
+    background:#fff;
+    box-shadow:2px 2px 0 0 var(--ink);
+  }
+  .open-card.is-week {
+    background:var(--orange);
+  }
+  .open-card.is-feedback {
+    background:var(--red);
+    color:#fff;
+  }
+  .open-card.is-archive {
+    background:rgba(255,255,255,.45);
+    border-style:dashed;
+    box-shadow:none;
+    color:rgba(45,45,45,.72);
+  }
+  .open-card.comment-entry {
+    background:var(--green);
+  }
+
+  .how-grid {
+    display:grid;
+    grid-template-columns:repeat(3, 1fr);
+    gap:20px;
+  }
+  .how-card {
+    position:relative;
+    min-height:178px;
+    padding:24px 18px 18px;
+    background:var(--white);
+    border:3px solid var(--ink);
+    border-radius:var(--wobbly-md);
+    box-shadow:var(--shadow);
+    transform:rotate(var(--tilt));
+  }
+  .how-card::before {
+    content:"";
+    position:absolute;
+    top:11px;
+    right:14px;
+    width:16px;
+    height:16px;
+    border-radius:50%;
+    background:var(--red);
+    border:2px solid var(--ink);
+  }
+  .how-card h3 {
+    margin:0 0 8px;
+    font-family:var(--font-title);
+    font-size:33px;
+    line-height:1;
+  }
+  .how-card p {
+    margin:0;
+    color:rgba(45,45,45,.72);
+  }
+
+  .bottom-cta {
+    position:relative;
+    margin-top:62px;
+    padding:30px;
+    display:grid;
+    grid-template-columns:1fr auto;
+    gap:22px;
+    align-items:center;
+    background:var(--postit);
+    border:3px solid var(--ink);
+    border-radius:var(--wobbly-lg);
+    box-shadow:var(--shadow-big);
+    transform:rotate(-.6deg);
+  }
+  .bottom-cta h2 {
+    margin:0 0 8px;
+    font-family:var(--font-title);
+    font-size:46px;
+    line-height:1;
+  }
+  .bottom-cta p {
+    margin:0;
+    font-size:23px;
+  }
+  .cta-actions {
+    display:flex;
+    flex-wrap:wrap;
+    justify-content:flex-end;
+    gap:12px;
+  }
+
+  .drawer {
+    position:fixed;
+    inset:0 0 0 auto;
+    z-index:80;
+    width:min(520px, 100%);
+    transform:translateX(104%);
+    transition:transform .22s ease;
+    background:var(--paper);
+    border-left:4px solid var(--ink);
+    box-shadow:-8px 0 0 0 var(--ink);
+    display:flex;
+    flex-direction:column;
+  }
+  .drawer.open { transform:translateX(0); }
+  .drawer-head {
+    position:relative;
+    padding:26px 24px;
+    background:var(--postit);
+    border-bottom:3px solid var(--ink);
+  }
+  .drawer-head::before {
+    content:"";
+    position:absolute;
+    top:15px;
+    right:68px;
+    width:20px;
+    height:20px;
+    border-radius:50%;
+    background:var(--red);
+    border:2px solid var(--ink);
+  }
+  .drawer-close {
+    position:absolute;
+    top:18px;
+    right:18px;
+    width:42px;
+    height:42px;
+    border:3px solid var(--ink);
+    border-radius:var(--wobbly);
+    background:#fff;
+    box-shadow:3px 3px 0 0 var(--ink);
+    font-size:28px;
+    line-height:1;
+  }
+  .drawer-title {
+    margin:8px 54px 0 0;
+    font-family:var(--font-title);
+    font-size:43px;
+    line-height:1.02;
+  }
+  .drawer-body {
+    padding:24px;
+    overflow:auto;
+    display:grid;
+    gap:15px;
+  }
+  .drawer-body p {
+    margin:0;
+    font-size:22px;
+  }
+  .drawer-row {
+    padding:13px 15px;
+    background:var(--white);
+    border:2px dashed var(--ink);
+    border-radius:var(--wobbly-md);
+  }
+  .drawer-row h3 {
+    margin:0 0 5px;
+    font-family:var(--font-title);
+    color:var(--blue);
+    font-size:25px;
+    line-height:1;
+  }
+  .round-update-list {
+    display:grid;
+    gap:10px;
+  }
+  .round-update-item {
+    padding:10px 11px;
+    background:#eef7ff;
+    border:2px dashed rgba(45,45,45,.55);
+    border-radius:var(--wobbly-md);
+  }
+  .round-update-item h4 {
+    margin:0 0 5px;
+    color:var(--blue);
+    font-family:var(--font-title);
+    font-size:22px;
+    line-height:1;
+  }
+  .round-update-item p {
+    font-size:20px;
+  }
+  .copy-status {
+    min-height:26px;
+    color:var(--blue);
+  }
+  .comment-note {
+    color:rgba(45,45,45,.62);
+    font-size:18px !important;
+  }
+  .comments-list {
+    display:grid;
+    gap:10px;
+    margin-top:12px;
+  }
+  .comment-card {
+    padding:10px 11px;
+    background:#fffaf0;
+    border:2px solid rgba(45,45,45,.78);
+    border-radius:var(--wobbly-md);
+  }
+  .comment-card strong {
+    display:block;
+    margin-bottom:4px;
+    color:var(--red);
+    font-family:var(--font-title);
+    font-size:22px;
+    line-height:1;
+  }
+  .comment-card p {
+    font-size:20px;
+  }
+  .comment-card time {
+    display:block;
+    margin-top:6px;
+    color:rgba(45,45,45,.55);
+    font-size:16px;
+  }
+  .comment-empty {
+    padding:10px 11px;
+    background:rgba(255,255,255,.58);
+    border:2px dashed rgba(45,45,45,.45);
+    border-radius:var(--wobbly-md);
+    color:rgba(45,45,45,.62);
+  }
+  .comment-form {
+    display:grid;
+    gap:10px;
+    margin-top:13px;
+  }
+  .comment-form label {
+    display:grid;
+    gap:5px;
+    color:rgba(45,45,45,.72);
+    font-size:18px;
+  }
+  .comment-form input,
+  .comment-form textarea {
+    width:100%;
+    padding:9px 10px;
+    border:2px solid var(--ink);
+    border-radius:var(--wobbly-md);
+    background:var(--white);
+    color:var(--ink);
+    font:inherit;
+    font-size:20px;
+  }
+  .comment-form textarea {
+    min-height:86px;
+    resize:vertical;
+  }
+  .comment-form .open-card {
+    width:max-content;
+  }
+
+  @media (max-width:900px) {
+    .hero,
+    .bottom-cta { grid-template-columns:1fr; }
+    .stats { grid-template-columns:repeat(2, 1fr); }
+    .how-grid { grid-template-columns:1fr; }
+    .section-head { align-items:flex-start; flex-direction:column; }
+    .section-note { text-align:left; }
+    .project-group-head { align-items:flex-start; flex-direction:column; }
+    .project-group-note { text-align:left; }
+    .note-card { transform:rotate(.5deg); }
+    .scribble-arrow { display:none; }
+  }
+  @media (max-width:640px) {
+    .page { width:min(100% - 24px, 1120px); padding-top:14px; }
+    .topbar { align-items:flex-start; flex-direction:column; }
+    .nav { justify-content:flex-start; }
+    h1 { font-size:54px; }
+    .hero-title-wrap {
+      grid-template-columns:minmax(0, max-content) minmax(120px, 38vw);
+      gap:10px;
+      align-items:center;
+    }
+    .dou-penguin { width:100%; }
+    .hero { gap:24px; padding-top:32px; }
+    .project-grid { grid-template-columns:1fr; }
+    .stats { grid-template-columns:1fr 1fr; gap:12px; }
+    .stat { min-height:98px; }
+    .stat b { font-size:36px; }
+    .bottom-cta { padding:23px; }
+    .cta-actions { justify-content:flex-start; }
+  }
+</style>
+</head>
+<body>
+  <main class="page">
+    <header class="topbar">
+      <a class="brand" href="#">
+        <span class="brand-mark">兜</span>
+        <span class="brand-text">
+          <span class="brand-title">兜来拼好桌</span>
+        <span class="brand-sub">Builder 项目兜</span>
+        </span>
+      </a>
+      <nav class="nav">
+        <a href="#projects">本周上桌</a>
+        <a href="#how">怎么看</a>
+        <span class="pill" id="seatPill">27 个座位</span>
+      </nav>
+    </header>
+
+    <section class="hero">
+      <div>
+        <span class="kicker">Builder 项目兜</span>
+        <div class="hero-title-wrap">
+          <h1>兜来拼好桌<br><strong>来都来了</strong></h1>
+          <img class="dou-penguin" src="./assets/builder-notes-hero-sticker.png" alt="兜兜贴纸截图">
+        </div>
+        <p class="hero-copy">这周上桌的项目在这里。先看看，等会儿一起聊。</p>
+        <div class="hero-actions">
+          <a class="btn" href="#projects">看项目卡片</a>
+          <a class="btn secondary" href="./builder-jam-signup-conditional.html">我也想入座</a>
+        </div>
+      </div>
+      <aside class="note-card">
+        <svg class="scribble-arrow" viewBox="0 0 100 70" aria-hidden="true">
+          <path d="M8 44 C28 18, 49 14, 79 28" />
+          <polyline points="67,16 82,29 62,37" />
+        </svg>
+        <h2>不是排行榜，是项目近况。</h2>
+        <p>每张卡只保留三件事：项目内容、创作者、现在最想让大家看哪里。</p>
+        <p>没做完也可以上桌。桌上本来就应该有草稿。</p>
+        <p class="manual-update" id="lastUpdatedNote">最后更新：2026.06.16 18:31 · 状态由活动组织者手动维护</p>
+      </aside>
+    </section>
+
+    <section class="stats" id="statsGrid" aria-label="项目统计"></section>
+
+    <section class="section" id="projects">
+      <div class="section-head">
+        <div>
+          <span class="sticky-label">项目卡片</span>
+          <h2 class="section-title">这桌有哪些项目</h2>
+        </div>
+        <p class="section-note">先看本周上桌，再翻之前拼过的桌。点开卡片看链接、邀请码和完整反馈点。</p>
+      </div>
+      <div class="filters" id="filters" aria-label="筛选项目"></div>
+      <div class="project-stack" id="projectGrid"></div>
+    </section>
+
+    <section class="section" id="how">
+      <div class="section-head">
+        <div>
+          <span class="sticky-label">怎么看</span>
+          <h2 class="section-title">先看这三件事</h2>
+        </div>
+      </div>
+      <div class="how-grid">
+        <article class="how-card" style="--tilt:-1.2deg">
+          <h3>项目是做什么的</h3>
+          <p>先看一句话介绍。能不能一眼知道它解决什么问题，或者好玩在哪里。</p>
+        </article>
+        <article class="how-card" style="--tilt:1.5deg">
+          <h3>现在想看哪里</h3>
+          <p>看“想让大家看”那一栏。反馈最好围绕这个来，不用泛泛地夸或挑刺。</p>
+        </article>
+        <article class="how-card" style="--tilt:-.4deg">
+          <h3>没做完也能上桌</h3>
+          <p>不用等成品。能说清楚在做什么，有草稿、Demo 或概念，就可以先放上来。</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="bottom-cta">
+      <div>
+        <h2>看完这桌，挑一个项目聊聊。</h2>
+        <p>先看本周上桌的几张卡。想下次把自己的项目端上来，也可以去报名页留资料。</p>
+      </div>
+      <div class="cta-actions">
+        <a class="btn" href="#projects">回到本周上桌</a>
+        <a class="btn secondary" href="./builder-jam-signup-conditional.html">我也想下次上桌</a>
+      </div>
+    </section>
+  </main>
+
+  <aside class="drawer" id="drawer" aria-hidden="true">
+    <div class="drawer-head">
+      <span class="status" id="drawerStatus"></span>
+      <h2 class="drawer-title" id="drawerTitle"></h2>
+      <button class="drawer-close" type="button" data-close>×</button>
+    </div>
+    <div class="drawer-body">
+      <p id="drawerDesc"></p>
+      <div class="drawer-row">
+        <h3>想让大家看</h3>
+        <p id="drawerNeed"></p>
+      </div>
+      <div class="drawer-row">
+        <h3>创作者</h3>
+        <p id="drawerMaker"></p>
+      </div>
+      <div class="drawer-row">
+        <h3>分享记录</h3>
+        <p id="drawerEvent"></p>
+      </div>
+      <div class="drawer-row" id="drawerRoundUpdateRow" hidden>
+        <h3>本轮更新</h3>
+        <div class="round-update-list" id="drawerRoundUpdate"></div>
+      </div>
+      <div class="drawer-row" id="drawerAccessRow" hidden>
+        <h3>体验方式</h3>
+        <p id="drawerAccess"></p>
+      </div>
+      <div class="drawer-row" id="drawerInviteRow" hidden>
+        <h3>邀请码</h3>
+        <p id="drawerInvite"></p>
+      </div>
+      <div class="drawer-row" id="commentBoard">
+        <h3>观众留言</h3>
+        <p class="comment-note">当前是本地原型：留言会保存在这个浏览器里。上线共享留言板时，把这里换成接口读写。</p>
+        <div class="comments-list" id="commentsList"></div>
+        <form class="comment-form" id="commentForm">
+          <label>
+            昵称
+            <input id="commentName" type="text" maxlength="16" placeholder="比如：路过的 Builder">
+          </label>
+          <label>
+            留言
+            <textarea id="commentText" maxlength="180" placeholder="一句具体反馈就很好：我喜欢的是 / 我卡住的是 / 我建议下一步..."></textarea>
+          </label>
+          <button class="open-card is-feedback" type="submit">留下反馈</button>
+        </form>
+      </div>
+      <div class="tags" id="drawerTags"></div>
+      <a class="btn secondary" id="drawerLink" href="#" target="_blank" rel="noreferrer" hidden>打开项目链接</a>
+      <button class="btn" type="button" data-copy>复制这张卡片</button>
+      <div class="copy-status" id="copyStatus"></div>
+    </div>
+  </aside>
+
+<script>
+  const pageMeta = {
+    lastUpdated:"2026.06.16 18:31",
+    updateNote:"状态由活动组织者手动维护"
+  };
+
+  const statusMeta = {
+    week:{
+      label:"本周上桌",
+      groupTitle:"本周上桌",
+      groupNote:"今天先聊这几张。",
+      buttonLabel:"看详情",
+      statLabel:"本周上桌"
+    },
+    feedback:{
+      label:"急需反馈",
+      groupTitle:"急需反馈",
+      groupNote:"这张欢迎大家直接拍。",
+      buttonLabel:"来拍砖",
+      statLabel:"急需反馈"
+    },
+    archive:{
+      label:"已拼桌",
+      groupTitle:"已拼桌",
+      groupNote:"之前拼过桌",
+      buttonLabel:"看记录",
+      statLabel:"已拼桌"
+    },
+    soon:{
+      label:"敬请期待",
+      groupTitle:"敬请期待",
+      groupNote:"还没上桌，但可以先占个座。",
+      buttonLabel:"等它来",
+      statLabel:"敬请期待"
+    }
+  };
+
+  const filterOrder = ["all", "week", "feedback", "archive", "soon"];
+  const statCards = [
+    { key:"total", label:"张项目卡", tilt:"-1.5deg" },
+    { key:"week", label:"本周上桌", tilt:"1deg" },
+    { key:"feedback", label:"急需反馈", tilt:"-.9deg" },
+    { key:"archive", label:"已拼桌", tilt:"-.6deg" },
+    { key:"soon", label:"敬请期待", tilt:"1.4deg" }
+  ];
+
+  const projects = [
+    {
+      id:"p01", title:"CyberPrison", maker:"兜兜", event:"Builder Jam #0",
+      status:"archive",
+      desc:"未上线项目收容所，用来收纳半成品，也顺手给 ADHD 的自己一点推进力。",
+      need:"这次想把它改成更正能量的赛博旅馆：帮忙看项目展示和入住逻辑是否更舒服。",
+      tags:["改版中","收纳","项目展示"],
+      url:"https://cyber-prison.vercel.app"
+    },
+    {
+      id:"p02", title:"NBTI 评测", maker:"KK", event:"Builder Jam #1",
+      status:"archive",
+      desc:"女人就是牛逼：16 种女性超级人格测试。",
+      need:"重点看完整测试流程是否顺，结果页是否够好笑、够想转发。",
+      tags:["追热点","小白练手","人格测试"],
+      url:"https://nbti-rho.vercel.app/"
+    },
+    {
+      id:"p03", title:"吃啥💩啥", maker:"Keith山河", event:"Builder Jam #1",
+      status:"archive",
+      desc:"用一本正经的伪科学，认真指导今天吃什么、拉什么的精彩人生。",
+      need:"想看大家对这个主题的接受度：是好笑、上头，还是过于抽象。",
+      tags:["搞怪","小游戏","伪科学"],
+      url:"https://lasa.zhangrg.top/"
+    },
+    {
+      id:"p04", title:"異議あり!", maker:"大叉", event:"Builder Jam #1",
+      status:"feedback",
+      desc:"AI 迷雾侦探游戏，玩家在案件里推理、追问、找漏洞。",
+      need:"想看看生成案件是否符合预期，可玩性和互动性够不够，一切反馈都很重要。",
+      updatedAt:"2026.06.16",
+      recentChange:"开放 Merging 邀请码试玩，开始收集案件生成与可玩性反馈。",
+      currentFocus:"验证 AI 案件生成质量、互动追问是否能让玩家自然进入推理。",
+      nextStep:"根据试玩反馈，优先调整新手引导或案件结构。",
+      tags:["AI侦探","推理游戏","互动剧情"],
+      url:"https://www.casefile.games",
+      invite:"Merging"
+    },
+    {
+      id:"p05", title:"梦田 App", maker:"橄榄", event:"Builder Jam #1",
+      status:"archive",
+      desc:"基于 CBT-I 认知行为疗法的 6 周失眠陪伴 App，来自慢性失眠者的真实需求。",
+      need:"想看看失眠患者是否想用，也欢迎同类问题和真实体验反馈。",
+      tags:["真需求","失眠","App"],
+      url:"https://apps.apple.com/cn/app/%E6%A2%A6%E7%94%B0/id6761222634"
+    },
+    {
+      id:"p06", title:"赛博澡堂", maker:"喜牛牛", event:"Builder Jam #1",
+      status:"archive",
+      desc:"基于兜兜一句话灵感的实操小游戏，带着你的 AI 玩偶一起澡堂乱斗。",
+      need:"重点看 Vibe 到不到位、玩法是否好笑，第一次打开会不会想继续玩。",
+      tags:["小游戏","搞怪","AI玩偶"],
+      url:"https://bath.0089757.xyz/"
+    },
+    {
+      id:"p07", title:"卡皮巴拉塔罗牌", maker:"Claire", event:"Builder Jam #2",
+      status:"archive",
+      desc:"面向海外用户、以卡皮巴拉为 IP 的 AI 塔罗 + 疗愈网站，也是创作者第一款独立 vibe coding 产品。",
+      need:"看它好不好玩、有没有真实需求，以及是否有商业化可能。",
+      tags:["疗愈","AI塔罗","海外用户"],
+      url:"https://capyhealing.com/"
+    },
+    {
+      id:"p08", title:"职愈岛 App", maker:"破晓刺客", event:"Builder Jam #2",
+      status:"archive",
+      desc:"把工位变成一座轻松小岛的职场情绪疗愈 App。",
+      need:"重点看新手上手是否顺，核心功能能不能让打工人真的放松一点。",
+      tags:["职场疗愈","App","情绪"],
+      access:"App Store 搜「职愈岛」"
+    },
+    {
+      id:"p09", title:"命里万象", maker:"Annabel🍎", event:"Builder Jam #2",
+      status:"archive",
+      desc:"零随机数、纯算法手搓的八字命局结构拆解工具：知命而不信，知势而顺之。",
+      need:"帮忙看解释是否清楚、结果是否有启发感，以及非专业用户能不能读懂。",
+      tags:["命理","算法","结构拆解"],
+      url:"https://fourpillars777.netlify.app/"
+    },
+    {
+      id:"p10", title:"塔罗原型测试", maker:"tenten", event:"Builder Jam #3",
+      status:"archive",
+      desc:"基于塔罗大阿尔卡那 22 原型的人格测试：比 MBTI 更温柔的一面镜子，30 题 5 分钟。",
+      need:"帮忙看题目是否顺、结果是否准确温柔，是否让人愿意分享给朋友。",
+      tags:["人格测试","塔罗","精致"],
+      access:"创作者小红书主页内"
+    },
+    {
+      id:"p11", title:"3D 大丽花", maker:"curtin", event:"Builder Jam #3",
+      status:"archive",
+      desc:"3D 互动花朵作品，打开后可以许愿，也可以单纯看花转起来。",
+      need:"欢迎看视觉效果和互动手感，尤其是哪里还能更顺、更惊喜。",
+      tags:["3D互动","视觉","许愿"],
+      url:"https://heeli.cc/"
+    },
+    {
+      id:"p12", title:"VC 创投大富翁💸", maker:"Keith山河", event:"Builder Jam #3",
+      status:"archive",
+      desc:"如果你是 VC，你会破产吗？用小游戏的方式体验创投 101。",
+      need:"想看规则是否容易懂、游戏是否有笑点，以及知识点有没有被玩进去。",
+      tags:["小游戏","知识","创投"],
+      url:"https://vc-tycoon-init.vercel.app/"
+    },
+    {
+      id:"p13", title:"贷款计算器", maker:"派Trick", event:"Builder Jam #4",
+      status:"archive",
+      desc:"一个随时了解自己经济情况的小工具，帮你把贷款压力算清楚。",
+      need:"重点看计算逻辑是否够直观，以及结果展示能不能让人快速做判断。",
+      tags:["真需求","工具","财务"],
+      url:"https://loan-calculator.idealjs.com"
+    },
+    {
+      id:"p14", title:"这班没白上", maker:"绝情打工人", event:"Builder Jam #4",
+      status:"archive",
+      desc:"一个哄自己上班、防止冲动裸辞的 App。",
+      need:"看看哪里可以优化，尤其是打工人第一次打开时会不会被安慰到。",
+      tags:["好玩","职场","App"],
+      access:"App Store 搜「这班没白上」"
+    },
+    {
+      id:"p15", title:"安心开饭", maker:"Siany", event:"Builder Jam #4",
+      status:"archive",
+      desc:"让怕油的自己能够安心开饭。",
+      need:"想看推荐是否真的解决“今天吃什么”，以及流程够不够轻松安心。",
+      tags:["真需求","吃饭","生活工具"],
+      url:"https://softkitchen.netlify.app"
+    },
+    {
+      id:"p17", title:"狗叫模拟器", maker:"Keith山河", event:"Builder Jam #4",
+      status:"archive",
+      desc:"对着话筒模仿一声狗叫，AI 在 1-3 分钟内把这声狗叫翻译成一个可玩的 HTML5 小游戏，并收录到作品集。",
+      need:"重点看游戏体验是否好玩，狗叫输入到游戏生成这件事有没有魔法感。",
+      tags:["搞怪","游戏","AI生成"],
+      url:"https://placing-merry-telecharger-thomas.trycloudflare.com"
+    },
+    {
+      id:"p18", title:"世界旅行地图", maker:"冰块儿🧊", event:"Builder Jam #6",
+      status:"week",
+      desc:"给朋友的生日礼物：一个可视化的世界旅行地图网站。",
+      need:"帮忙看视觉交互是否够温暖，地图里的旅行记忆有没有被很好地呈现。",
+      updatedAt:"2026.06.16",
+      recentChange:"放入本周项目桌，整理地图视觉与旅行记忆呈现。",
+      currentFocus:"看地图视觉是否温暖，旅行记忆是否容易被读到。",
+      nextStep:"如果反馈集中在信息层级，下一版先梳理地点和故事的展开方式。",
+      tags:["本周上桌","视觉交互","地图"],
+      url:"https://oyster-amusement-park.vercel.app/"
+    },
+    {
+      id:"p16", title:"以公园之名", maker:"Yichu", event:"Builder Jam #4",
+      status:"soon",
+      desc:"一个鼓励同城好友去草坪晒太阳、睡觉、吸收天地正气的 Demo Concept。",
+      need:"想看这个同城公园局的场景是否成立，大家会不会愿意真的约一次。",
+      updatedAt:"准备中",
+      recentChange:"占座中，等待可试玩 Demo。",
+      currentFocus:"先验证同城公园局这个场景是否成立。",
+      nextStep:"补 Demo 后再上桌收集约局意愿。",
+      tags:["敬请期待","真需求","同城"],
+      access:"Demo Concept"
+    },
+    {
+      id:"p19", title:"液态围棋", maker:"念一", event:"Builder Jam #5",
+      status:"archive",
+      desc:"把围棋棋子变成可以自由落在棋盘里的柔性势力范围，像重新学习一款棋类游戏。",
+      need:"游戏体验是否好玩，规则探索有没有意思。",
+      tags:["搞怪🤪","游戏","围棋"],
+      url:"https://github.com/WangNianyi2001/Fluid-Weiqi",
+      invite:"无需邀请码"
+    },
+    {
+      id:"p20", title:"晚了吧", maker:"HanZePhyr", event:"Builder Jam #5",
+      status:"archive",
+      desc:"一个出行时间规划小程序，帮你按到达时间倒推出每一段该几点出发。",
+      need:"登录部分有没有问题，以及这个小工具到底实不实用。",
+      tags:["懒人的真需求","小程序","出行"],
+      access:"小程序“出行时间规划”",
+      invite:"无需邀请码"
+    },
+    {
+      id:"p21", title:"OpenDev", maker:"Shawn", event:"Builder Jam #5",
+      status:"archive",
+      desc:"一个给一人开发公司用的 OS，想把 AI 驱动的软件开发流水线自动化起来。",
+      need:"有没有真实需求，以及这个方向还可以怎么做。",
+      tags:["真需求","工具","AI开发"],
+      url:"https://github.com/2365203723/opendev",
+      invite:"无需邀请码"
+    },
+    {
+      id:"p22", title:"VibeAround", maker:"Jazzen ᯅ", event:"Builder Jam #5",
+      status:"archive",
+      desc:"VibeAround 是一个跨端的本地 AI 编程 Agent 工作空间。它统一连接 Claude Code、Codex CLI、Gemini CLI、Pi Agent 等本地工具，支持自定义模型和第三方 provider，让 Agent 继续在你的电脑上执行，同时可以从桌面、Web、手机和消息平台持续接入工作会话。",
+      need:"有没有需求，任何建议都 OK。",
+      tags:["真需求","工具","Skill"],
+      url:"https://github.com/jazzenchen/VibeAround",
+      invite:"无需邀请码"
+    },
+    {
+      id:"p23", title:"我妈用了都说好", maker:"蛋妞", event:"Builder Jam #5",
+      status:"archive",
+      desc:"面向小微工厂的 AI 考勤记薪系统，数码小白也能无痛上手。",
+      need:"有没有真实需求，哪些地方还可以讲得更清楚、用得更顺手。",
+      tags:["真需求","工具","长辈友好"],
+      url:"https://clockin-lite.dnbox.cn",
+      invite:"Merging"
+    },
+    {
+      id:"p24", title:"一个抽象的电台", maker:"大虫子", event:"Builder Jam #6",
+      status:"soon", placeholder:true,
+      desc:"一个全球以太电台，主打抽象的爱。",
+      need:"敬请期待：之后重点看电台体验是否好玩、够不够有记忆点。",
+      updatedAt:"准备中",
+      recentChange:"占座中，等待下一版电台体验。",
+      currentFocus:"确认全球以太电台的核心记忆点。",
+      nextStep:"等电台体验稳定后再正式上桌。",
+      tags:["敬请期待","搞怪🤪","游戏"],
+      url:"https://radio.okethan.top/"
+    },
+    {
+      id:"p25", title:"Lexispace", maker:"鹤仔", event:"Builder Jam #6",
+      status:"week",
+      desc:"理工男生永远的浪漫，3D 空间猜词游戏。",
+      need:"试玩，收集哪里可以继续改进。",
+      updatedAt:"2026.06.16",
+      recentChange:"开始收集试玩反馈，调整空间猜词 Demo 体验。",
+      currentFocus:"验证 3D 空间猜词的第一轮上手是否顺。",
+      nextStep:"先改卡顿点和提示节奏，再补关卡内容。",
+      tags:["本周上桌","搞怪🤪","游戏"],
+      url:"https://lexispace.streets.city"
+    },
+    {
+      id:"p26", title:"题呼呼", maker:"圈圈烃", event:"Builder Jam #6",
+      status:"week",
+      desc:"题呼呼是一款 AI 驱动的知识游戏化学习软件。",
+      need:"如果让你删除功能，删哪一个？如果让你添加功能，添加什么功能？明天你还会打开这个软件吗？为什么不想打开呢？",
+      needShort:"想看哪些功能该删、该加，以及你明天还会不会打开。",
+      updatedAt:"2026.06.16",
+      recentChange:"上桌收集功能取舍反馈。",
+      currentFocus:"确认哪些学习功能该删、哪些值得加。",
+      nextStep:"根据反馈收敛核心玩法，优先保留让人第二天还想打开的部分。",
+      tags:["AI学习","知识游戏","学习工具"]
+    },
+    {
+      id:"p27", title:"先见 Foreseen", maker:"钊钊", event:"Builder Jam #6",
+      status:"week",
+      desc:"一个人男人在某一天被封印到了一本书里。他不愿意透露东西，但有时候又会胡言乱语，总之是一个有趣的人带着一些有趣的 agent 魂～",
+      need:"啥都是有用的！反馈！拍我！",
+      needShort:"啥都想听：试玩、吐槽、拍我都可以。",
+      updatedAt:"2026.06.16",
+      recentChange:"开放隐藏款试玩，整理邀请码与入口。",
+      currentFocus:"观察互动叙事里角色与 agent 感是否成立。",
+      nextStep:"先补让玩家更愿意继续追问的线索和反馈。",
+      tags:["隐藏款","互动叙事","Agent"],
+      url:"https://foreseen.okethan.top",
+      invite:"AI矿工"
+    }
+  ];
+
+  const grid = document.getElementById("projectGrid");
+  const statsGrid = document.getElementById("statsGrid");
+  const filterBar = document.getElementById("filters");
+  const seatPill = document.getElementById("seatPill");
+  const lastUpdatedNote = document.getElementById("lastUpdatedNote");
+  const drawer = document.getElementById("drawer");
+  const copyStatus = document.getElementById("copyStatus");
+  const commentsList = document.getElementById("commentsList");
+  const commentForm = document.getElementById("commentForm");
+  const commentName = document.getElementById("commentName");
+  const commentText = document.getElementById("commentText");
+  const commentStorageKey = "builderNotesProjectComments:v1";
+  let activeProject = projects[0];
+  let activeFilter = "all";
+
+  function escapeHtml(value) {
+    return String(value).replace(/[&<>"']/g, (char) => ({
+      "&":"&amp;",
+      "<":"&lt;",
+      ">":"&gt;",
+      "\"":"&quot;",
+      "'":"&#39;"
+    }[char]));
+  }
+
+  function getStatusMeta(project) {
+    return statusMeta[project.status] || statusMeta.archive;
+  }
+
+  function getCounts() {
+    const counts = { total:projects.length };
+    Object.keys(statusMeta).forEach((status) => {
+      counts[status] = projects.filter((project) => project.status === status).length;
+    });
+    return counts;
+  }
+
+  function formatCount(value, pad = true) {
+    return pad ? String(value).padStart(2, "0") : String(value);
+  }
+
+  function renderPageMeta(activeFilter = "all") {
+    const counts = getCounts();
+    seatPill.textContent = `${counts.total} 个座位`;
+    lastUpdatedNote.textContent = `最后更新：${pageMeta.lastUpdated} · ${pageMeta.updateNote}`;
+
+    statsGrid.innerHTML = statCards.map((stat) => `
+      <article class="stat" style="--tilt:${stat.tilt}">
+        <b>${formatCount(counts[stat.key], stat.key !== "total")}</b>
+        <span>${escapeHtml(stat.label)}</span>
+      </article>
+    `).join("");
+
+    filterBar.innerHTML = filterOrder.map((filter) => {
+      const label = filter === "all" ? "全部" : statusMeta[filter].label;
+      const count = filter === "all" ? counts.total : counts[filter];
+      return `
+        <button class="filter-btn ${filter === activeFilter ? "active" : ""}" type="button" data-filter="${filter}">
+          ${escapeHtml(label)}<span class="filter-count">${formatCount(count, filter !== "all")}</span>
+        </button>
+      `;
+    }).join("");
+  }
+
+  function readCommentStore() {
+    try {
+      return JSON.parse(localStorage.getItem(commentStorageKey)) || {};
+    } catch (error) {
+      return {};
+    }
+  }
+
+  function writeCommentStore(store) {
+    try {
+      localStorage.setItem(commentStorageKey, JSON.stringify(store));
+      return true;
+    } catch (error) {
+      return false;
+    }
+  }
+
+  function formatCommentTime(value) {
+    try {
+      return new Intl.DateTimeFormat("zh-CN", {
+        month:"2-digit",
+        day:"2-digit",
+        hour:"2-digit",
+        minute:"2-digit"
+      }).format(new Date(value));
+    } catch (error) {
+      return "";
+    }
+  }
+
+  function renderComments(project) {
+    const comments = readCommentStore()[project.id] || [];
+    if (!comments.length) {
+      commentsList.innerHTML = `<div class="comment-empty">还没有留言。先留一句最具体的试玩感受。</div>`;
+      return;
+    }
+
+    commentsList.innerHTML = comments.map((comment) => `
+      <article class="comment-card">
+        <strong>${escapeHtml(comment.name || "匿名 Builder")}</strong>
+        <p>${escapeHtml(comment.text)}</p>
+        <time>${escapeHtml(formatCommentTime(comment.createdAt))}</time>
+      </article>
+    `).join("");
+  }
+
+  function getCommentCount(projectId) {
+    return (readCommentStore()[projectId] || []).length;
+  }
+
+  function hasRoundUpdate(project) {
+    return Boolean(project.updatedAt || project.recentChange || project.currentFocus || project.nextStep);
+  }
+
+  function renderRoundUpdateStrip(project) {
+    if (!hasRoundUpdate(project)) return "";
+    const label = project.updatedAt ? `本轮更新 · ${project.updatedAt}` : "本轮看点";
+    const focus = project.currentFocus || project.recentChange || project.nextStep || "上桌前一句话待补充。";
+    return `
+      <div class="round-update-strip">
+        <span>${escapeHtml(label)}</span>
+        <b>${escapeHtml(focus)}</b>
+      </div>
+    `;
+  }
+
+  function renderDrawerRoundUpdate(project) {
+    const row = document.getElementById("drawerRoundUpdateRow");
+    const body = document.getElementById("drawerRoundUpdate");
+    if (!hasRoundUpdate(project)) {
+      body.innerHTML = "";
+      row.hidden = true;
+      return;
+    }
+
+    const updated = project.updatedAt ? `
+      <div class="round-update-item">
+        <h4>最近更新</h4>
+        <p>${escapeHtml(project.updatedAt)}</p>
+      </div>
+    ` : "";
+    const recent = project.recentChange ? `
+      <div class="round-update-item">
+        <h4>最近改了什么</h4>
+        <p>${escapeHtml(project.recentChange)}</p>
+      </div>
+    ` : "";
+    const focus = project.currentFocus ? `
+      <div class="round-update-item">
+        <h4>这次想让大家看</h4>
+        <p>${escapeHtml(project.currentFocus)}</p>
+      </div>
+    ` : "";
+    const next = project.nextStep ? `
+      <div class="round-update-item">
+        <h4>下一步准备做什么</h4>
+        <p>${escapeHtml(project.nextStep)}</p>
+      </div>
+    ` : "";
+
+    body.innerHTML = `${updated}${recent}${focus}${next}`;
+    row.hidden = false;
+  }
+
+  function renderCard(project, index) {
+      const tilt = [-1.5, .9, -0.7, 1.4, -1, .6][index % 6] + "deg";
+      const tape = [-4, 2, -2, 3, -1, 4][index % 6] + "deg";
+      const cardNo = String(index + 1).padStart(2, "0");
+      const meta = getStatusMeta(project);
+      const isSoon = project.status === "soon";
+      const needText = project.needShort || project.need;
+      const commentCount = getCommentCount(project.id);
+      return `
+        <article class="project-card ${isSoon ? "placeholder" : ""} ${project.status === "feedback" ? "is-feedback" : ""}" style="--tilt:${tilt};--tape:${tape}">
+          <div class="card-top">
+            <span class="project-no">note ${cardNo}</span>
+            <span class="status ${project.status}">${escapeHtml(meta.label)}</span>
+          </div>
+          <h3 class="project-title">${escapeHtml(project.title)}</h3>
+          <span class="project-event">${escapeHtml(project.event)}</span>
+          <p class="project-desc">${escapeHtml(project.desc)}</p>
+          ${renderRoundUpdateStrip(project)}
+          <div class="need"><b>想看：</b>${escapeHtml(needText)}</div>
+          <div class="tags">${project.tags.map((tag) => `<span class="tag">${escapeHtml(tag)}</span>`).join("")}</div>
+          <div class="card-foot">
+            <div class="maker"><span class="avatar">${escapeHtml(project.maker.slice(0, 1))}</span><span>${escapeHtml(project.maker)}</span></div>
+            <div class="card-actions-inline">
+              <button class="open-card comment-entry" type="button" data-comment-project="${project.id}">留言 ${formatCount(commentCount, false)}</button>
+              <button class="open-card is-${project.status}" type="button" data-project="${project.id}">${escapeHtml(meta.buttonLabel)}</button>
+            </div>
+          </div>
+        </article>
+      `;
+  }
+
+  function groupByEvent(items) {
+    return [...new Set(items.map((project) => project.event))].map((event) => ({
+      title:event,
+      note:statusMeta.archive.groupNote,
+      items:items.filter((project) => project.event === event)
+    }));
+  }
+
+  function getProjectGroups(filter = "all") {
+    const week = projects.filter((project) => project.status === "week");
+    const feedback = projects.filter((project) => project.status === "feedback");
+    const archive = projects.filter((project) => project.status === "archive");
+    const soon = projects.filter((project) => project.status === "soon");
+
+    if (filter === "all") {
+      return [
+        { title:statusMeta.week.groupTitle, note:statusMeta.week.groupNote, items:week },
+        { title:statusMeta.feedback.groupTitle, note:statusMeta.feedback.groupNote, items:feedback },
+        ...groupByEvent(archive),
+        { title:statusMeta.soon.groupTitle, note:statusMeta.soon.groupNote, items:soon }
+      ].filter((group) => group.items.length);
+    }
+
+    if (filter === "archive") return groupByEvent(archive);
+
+    const meta = statusMeta[filter] || statusMeta.archive;
+    const items = projects.filter((project) => project.status === filter);
+    return [{ title:meta.groupTitle, note:meta.groupNote, items }];
+  }
+
+  function renderProjects(filter = "all") {
+    activeFilter = filter;
+    renderPageMeta(filter);
+    let cardIndex = 0;
+    grid.innerHTML = getProjectGroups(filter).map((group) => `
+      <section class="project-group">
+        <div class="project-group-head">
+          <h3 class="project-group-title">${escapeHtml(group.title)}</h3>
+          ${group.note ? `<p class="project-group-note">${escapeHtml(group.note)}</p>` : ""}
+        </div>
+        <div class="project-grid">
+          ${group.items.map((project) => renderCard(project, cardIndex++)).join("")}
+        </div>
+      </section>
+    `).join("");
+  }
+
+  function openDrawer(project, options = {}) {
+    activeProject = project;
+    const meta = getStatusMeta(project);
+    const drawerStatus = document.getElementById("drawerStatus");
+    drawerStatus.textContent = meta.label;
+    drawerStatus.className = `status ${project.status}`;
+    document.getElementById("drawerTitle").textContent = project.title;
+    document.getElementById("drawerDesc").textContent = project.desc;
+    document.getElementById("drawerNeed").textContent = project.need;
+    document.getElementById("drawerMaker").textContent = project.maker;
+    document.getElementById("drawerEvent").textContent = `${project.event} · ${meta.label}`;
+    renderDrawerRoundUpdate(project);
+    document.getElementById("drawerTags").innerHTML = project.tags.map((tag) => `<span class="tag">${escapeHtml(tag)}</span>`).join("");
+    const accessRow = document.getElementById("drawerAccessRow");
+    const inviteRow = document.getElementById("drawerInviteRow");
+    if (project.access) {
+      document.getElementById("drawerAccess").textContent = project.access;
+      accessRow.hidden = false;
+    } else {
+      document.getElementById("drawerAccess").textContent = "";
+      accessRow.hidden = true;
+    }
+    if (project.invite) {
+      document.getElementById("drawerInvite").textContent = project.invite;
+      inviteRow.hidden = false;
+    } else {
+      document.getElementById("drawerInvite").textContent = "";
+      inviteRow.hidden = true;
+    }
+    const drawerLink = document.getElementById("drawerLink");
+    if (project.url) {
+      drawerLink.href = project.url;
+      drawerLink.hidden = false;
+    } else {
+      drawerLink.href = "#";
+      drawerLink.hidden = true;
+    }
+    copyStatus.textContent = "";
+    renderComments(project);
+    drawer.classList.add("open");
+    drawer.setAttribute("aria-hidden", "false");
+    if (options.focusComments) {
+      window.requestAnimationFrame(() => {
+        document.getElementById("commentBoard").scrollIntoView({ block:"start", behavior:"smooth" });
+        commentText.focus({ preventScroll:true });
+      });
+    }
+  }
+
+  function closeDrawer() {
+    drawer.classList.remove("open");
+    drawer.setAttribute("aria-hidden", "true");
+  }
+
+  function copyProject() {
+    const linkLine = activeProject.url ? `\n项目链接：${activeProject.url}` : (activeProject.access ? `\n体验方式：${activeProject.access}` : "");
+    const inviteLine = activeProject.invite ? `\n邀请码：${activeProject.invite}` : "";
+    const text = `【${activeProject.title}】\n创作者：${activeProject.maker}\n活动：${activeProject.event}\n一句话：${activeProject.desc}\n想让大家看：${activeProject.need}${linkLine}${inviteLine}`;
+    navigator.clipboard.writeText(text).then(() => {
+      copyStatus.textContent = "已复制，可以直接发到群里。";
+    }).catch(() => {
+      copyStatus.textContent = "浏览器没放行复制，手动选一下也行。";
+    });
+  }
+
+  function addComment(event) {
+    event.preventDefault();
+    const text = commentText.value.trim();
+    if (!text) {
+      commentText.focus();
+      return;
+    }
+
+    const store = readCommentStore();
+    const comments = store[activeProject.id] || [];
+    comments.push({
+      name:commentName.value.trim() || "匿名 Builder",
+      text,
+      createdAt:new Date().toISOString()
+    });
+    store[activeProject.id] = comments.slice(-30);
+
+    if (writeCommentStore(store)) {
+      commentText.value = "";
+      renderComments(activeProject);
+      renderProjects(activeFilter);
+      copyStatus.textContent = "留言已保存在当前浏览器。";
+    } else {
+      copyStatus.textContent = "浏览器没有放行本地保存，先复制卡片发群里也行。";
+    }
+  }
+
+  filterBar.addEventListener("click", (event) => {
+    const button = event.target.closest(".filter-btn");
+    if (!button) return;
+    renderProjects(button.dataset.filter);
+  });
+
+  grid.addEventListener("click", (event) => {
+    const commentTrigger = event.target.closest("[data-comment-project]");
+    if (commentTrigger) {
+      const project = projects.find((item) => item.id === commentTrigger.dataset.commentProject);
+      if (project) openDrawer(project, { focusComments:true });
+      return;
+    }
+
+    const trigger = event.target.closest("[data-project]");
+    if (!trigger) return;
+    const project = projects.find((item) => item.id === trigger.dataset.project);
+    if (project) openDrawer(project);
+  });
+
+  document.querySelector("[data-close]").addEventListener("click", closeDrawer);
+  document.querySelector("[data-copy]").addEventListener("click", copyProject);
+  commentForm.addEventListener("submit", addComment);
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") closeDrawer();
+  });
+
+  renderProjects();
+</script>
+</body>
+</html>

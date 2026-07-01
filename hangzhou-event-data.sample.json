@@ -1,0 +1,48 @@
+{
+  "meta": {
+    "title": "杭州线下赛",
+    "source": "SAMPLE"
+  },
+  "participants": [
+    {
+      "id": "p01",
+      "nickname": "示例选手 A",
+      "presence": "线下",
+      "stage": "Coding Phase 1",
+      "keywords": ["产品直觉", "快速原型", "现场展示"],
+      "demo": {
+        "title": "城市灵感收集器",
+        "description": "一个把现场观察整理成可演示小产品的 Demo。",
+        "url": ""
+      }
+    },
+    {
+      "id": "p02",
+      "nickname": "示例选手 B",
+      "presence": "线上",
+      "stage": "Coding Phase 2",
+      "keywords": ["AI Workflow", "数据整理", "小工具"],
+      "demo": {
+        "title": "表单清洗助手",
+        "description": "把杂乱报名信息清洗成可用活动数据。",
+        "url": ""
+      }
+    }
+  ],
+  "topics": [
+    {
+      "id": "t01",
+      "title": "给杭州的一次现场协作做一个最小工具",
+      "summary": "围绕当天真实活动场景，做一个能立刻帮大家减少混乱的小工具。",
+      "pptNo": "PPT-01",
+      "pptFile": "PPT-01-hangzhou-collaboration.pptx"
+    },
+    {
+      "id": "t02",
+      "title": "把报名表变成现场节奏控制台",
+      "summary": "从表单数据出发，设计一个主持人当天能稳定操作的控制界面。",
+      "pptNo": "PPT-02",
+      "pptFile": "PPT-02-event-control.pptx"
+    }
+  ]
+}

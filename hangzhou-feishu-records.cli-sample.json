@@ -1,0 +1,36 @@
+{
+  "fields": [
+    "昵称",
+    "你计划如何参与本次活动？",
+    "请用三个词来描述你自己",
+    "是否报名作为乱讲PPT的选手参加",
+    "最近一个月在VibeCoding啥产品呀..."
+  ],
+  "field_id_list": [
+    "fldwjCjowp",
+    "fldJ5N37jD",
+    "fld7dfyOMd",
+    "fldsBPvsKC",
+    "fldFCbRlDT"
+  ],
+  "data": [
+    [
+      "Dora",
+      ["线上参加"],
+      "Vibecoding小白",
+      ["不，我是围观"],
+      "暂时还没有啥东西"
+    ],
+    [
+      "小何",
+      ["线下现场参加"],
+      "拼豆爱好者，\n黑客松常客，\ncodex 烧货\n",
+      ["是，报名选手"],
+      "做了一个现场工作台，用于生成电商商品视频。"
+    ]
+  ],
+  "record_id_list": [
+    "rec27GTka6oLwo",
+    "rec27GXC9F9G3O"
+  ]
+}

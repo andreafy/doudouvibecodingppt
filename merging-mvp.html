@@ -1,0 +1,1285 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Merging MVP - Additive Signals</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700;800&family=Press+Start+2P&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #08080a;
+      --panel: #101014;
+      --screen: #060608;
+      --cream: #efebe3;
+      --dim: #efebe38c;
+      --soft: #efebe35c;
+      --line: #efebe317;
+      --green: #7fffb5;
+      --red: #ff3b2f;
+      --orange: #ff7a3d;
+      --amber: #ffb547;
+      --cyan: #5fd9ff;
+      --violet: #b589ff;
+      --lime: #c6ff5c;
+      color-scheme: dark;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      background: var(--bg);
+    }
+
+    body {
+      min-height: 100vh;
+      margin: 0;
+      color: var(--cream);
+      background:
+        radial-gradient(900px 500px at 8% -12%, #7fffb511, transparent 58%),
+        radial-gradient(820px 560px at 104% 108%, #b589ff10, transparent 60%),
+        linear-gradient(#08080a, #0b0a0e);
+      font-family: Inter, "PingFang SC", system-ui, sans-serif;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    button,
+    input {
+      font: inherit;
+    }
+
+    button {
+      cursor: pointer;
+      color: inherit;
+      background: transparent;
+      border: 0;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .scan,
+    .sweep {
+      pointer-events: none;
+      position: fixed;
+      inset: 0;
+    }
+
+    .scan {
+      z-index: 40;
+      opacity: .46;
+      background-image: repeating-linear-gradient(0deg, transparent 0 3px, #00000025 3px 4px);
+    }
+
+    .sweep {
+      z-index: 41;
+      top: -120px;
+      height: 120px;
+      background: linear-gradient(180deg, transparent, #7fffb50f, transparent);
+      animation: sweep 12s linear infinite;
+    }
+
+    .app {
+      position: relative;
+      z-index: 1;
+      min-height: 100vh;
+    }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 30;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      min-height: 58px;
+      padding: 8px 22px;
+      background: #09090be8;
+      border-bottom: 1px solid var(--line);
+      backdrop-filter: blur(18px);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+    }
+
+    .logo {
+      display: grid;
+      grid-template-columns: repeat(7, 4px);
+      grid-auto-rows: 4px;
+      filter: drop-shadow(0 0 5px #7fffb599);
+      flex: none;
+    }
+
+    .px {
+      width: 4px;
+      height: 4px;
+    }
+
+    .w {
+      background: var(--cream);
+    }
+
+    .g {
+      background: var(--green);
+    }
+
+    .lg {
+      background: #dfffe8;
+    }
+
+    .brand-name {
+      font-size: 22px;
+      font-weight: 900;
+      letter-spacing: -0.04em;
+      white-space: nowrap;
+    }
+
+    .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--red);
+      box-shadow: 0 0 8px var(--red);
+      animation: blink 1s infinite;
+      flex: none;
+    }
+
+    .my-stream {
+      min-height: 48px;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      margin-left: 44px;
+      padding: 0 18px;
+      color: var(--cream);
+      background: linear-gradient(#efebe30e, #efebe306);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+
+    .my-stream small {
+      color: var(--dim);
+      font-family: "JetBrains Mono", monospace;
+      font-size: 10px;
+      letter-spacing: 3px;
+    }
+
+    .top-spacer {
+      flex: 1;
+    }
+
+    .icon-btn,
+    .avatar-btn {
+      height: 48px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--dim);
+      background: #efebe305;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .icon-btn {
+      width: 48px;
+    }
+
+    .go-live {
+      min-height: 48px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 0 28px;
+      color: #140504;
+      background: var(--red);
+      border-radius: 8px;
+      box-shadow: 0 14px 34px #ff3b2f2d;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 13px;
+      font-weight: 900;
+      letter-spacing: 2px;
+      white-space: nowrap;
+    }
+
+    .go-live .dot {
+      background: #150504;
+      box-shadow: none;
+    }
+
+    .avatar-btn {
+      gap: 8px;
+      min-width: 118px;
+      padding: 0 12px;
+      border-radius: 999px;
+      color: var(--cream);
+    }
+
+    .avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background:
+        radial-gradient(circle at 36% 30%, #ffffff42, transparent 28%),
+        linear-gradient(135deg, #7eb8ff, #1c2330);
+      border: 2px solid #efebe37a;
+      box-shadow: 0 0 14px #7eb8ff40;
+    }
+
+    .shell {
+      display: grid;
+      grid-template-columns: minmax(320px, 37vw) minmax(0, 1fr);
+      min-height: calc(100vh - 58px);
+    }
+
+    .left-rail {
+      border-right: 1px solid var(--line);
+      background:
+        linear-gradient(#06110df0, #07100ced),
+        repeating-linear-gradient(90deg, #7fffb50b 0 1px, transparent 1px 88px);
+    }
+
+    .panel {
+      position: relative;
+      margin: 0;
+      border-bottom: 1px solid #7fffb533;
+      overflow: hidden;
+    }
+
+    .panel::before {
+      content: "";
+      pointer-events: none;
+      position: absolute;
+      inset: 0;
+      opacity: .34;
+      background-image:
+        linear-gradient(#7fffb51e 1px, transparent 1px),
+        linear-gradient(90deg, #7fffb51e 1px, transparent 1px);
+      background-size: 88px 56px;
+    }
+
+    .panel-inner {
+      position: relative;
+      z-index: 1;
+      padding: 28px 32px;
+    }
+
+    .calendar h1,
+    .forest h2 {
+      margin: 0;
+      font-size: 30px;
+      letter-spacing: -0.04em;
+      line-height: 1.08;
+      font-weight: 800;
+    }
+
+    .tabs {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      width: min(270px, 100%);
+      margin: 34px 0 28px;
+      padding: 4px;
+      background: #00000044;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+    }
+
+    .tabs button {
+      min-height: 38px;
+      color: var(--dim);
+      border-radius: 7px;
+      font-size: 14px;
+      font-weight: 900;
+    }
+
+    .tabs button.active {
+      color: var(--cream);
+      background: #7fffb520;
+      box-shadow: inset 0 0 0 1px #7fffb555;
+    }
+
+    .event-row {
+      display: grid;
+      grid-template-columns: 132px 72px minmax(0, 1fr) auto;
+      gap: 16px;
+      align-items: center;
+      min-height: 110px;
+    }
+
+    .date-chip {
+      min-height: 44px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: #7eb8ff;
+      border: 1px solid #7eb8ff8a;
+      border-radius: 8px;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 16px;
+      font-weight: 900;
+    }
+
+    .event-thumb {
+      width: 68px;
+      height: 68px;
+      border-radius: 8px;
+      background:
+        radial-gradient(circle at 70% 18%, #ffb5477d, transparent 34%),
+        linear-gradient(135deg, #321b0f, #0f1414);
+      border: 1px solid #efebe32f;
+    }
+
+    .event-main {
+      min-width: 0;
+    }
+
+    .event-main strong {
+      display: block;
+      color: var(--cream);
+      font-size: 21px;
+      font-weight: 900;
+      line-height: 1.2;
+    }
+
+    .event-main span,
+    .event-meta {
+      color: var(--dim);
+      font-size: 15px;
+      line-height: 1.35;
+    }
+
+    .event-meta {
+      text-align: right;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 13px;
+    }
+
+    .calendar-foot {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 22px;
+      color: var(--green);
+      font-size: 18px;
+      font-weight: 900;
+    }
+
+    .calendar-foot::before {
+      content: "";
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 12px var(--green);
+    }
+
+    .forest {
+      margin: 24px 0 0;
+      border: 1px solid #ffb54758;
+      border-radius: 10px;
+      background:
+        repeating-linear-gradient(90deg, #5d391a4d 0 28px, #123c2636 28px 56px),
+        linear-gradient(#0c1812, #08120d);
+      box-shadow: inset 0 0 0 2px #5f3b1e3d, 0 20px 50px #00000055;
+    }
+
+    .forest .panel-inner {
+      padding: 26px 36px 28px;
+    }
+
+    .kicker {
+      color: #7eb8ff;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: 3px;
+      margin-bottom: 8px;
+    }
+
+    .forest-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 24px;
+    }
+
+    .forest-count {
+      color: #ffdf91;
+      background: #4f2d124f;
+      border: 1px solid #ffb54774;
+      border-radius: 8px;
+      padding: 8px 12px;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 13px;
+      white-space: nowrap;
+    }
+
+    .search {
+      width: 100%;
+      height: 52px;
+      margin-bottom: 24px;
+      padding: 0 16px;
+      color: var(--cream);
+      background: #06100bd4;
+      border: 1px solid #ffb54763;
+      border-radius: 8px;
+      outline: none;
+      font-size: 15px;
+    }
+
+    .friends {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .friend {
+      min-width: 0;
+      padding: 12px 8px;
+      text-align: center;
+      background: #efebe308;
+      border: 1px solid #efebe320;
+      border-radius: 10px;
+    }
+
+    .friend-avatar {
+      width: 72px;
+      height: 72px;
+      margin: 0 auto 10px;
+      border-radius: 50%;
+      border: 2px solid #ffdf91a8;
+      background:
+        radial-gradient(circle at 36% 30%, #fff4, transparent 25%),
+        linear-gradient(135deg, var(--friend, #7fffb5), #273022);
+      box-shadow: 0 0 0 3px #050907;
+    }
+
+    .friend strong {
+      display: block;
+      overflow: hidden;
+      color: var(--cream);
+      font-size: 15px;
+      font-weight: 900;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .friend span {
+      display: block;
+      overflow: hidden;
+      margin-top: 5px;
+      color: var(--dim);
+      font-size: 12px;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .main {
+      min-width: 0;
+      padding: 40px 24px 48px;
+      background:
+        radial-gradient(600px 300px at 55% 8%, #ff7a3d0b, transparent 60%),
+        radial-gradient(760px 360px at 80% 100%, #b589ff10, transparent 58%),
+        #08080a;
+    }
+
+    .chips {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      overflow-x: auto;
+      padding: 0 0 38px;
+      scrollbar-width: none;
+    }
+
+    .chips::-webkit-scrollbar {
+      display: none;
+    }
+
+    .chip {
+      min-height: 60px;
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      padding: 0 24px;
+      color: var(--dim);
+      background: #efebe305;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      font-size: 16px;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+
+    .chip.active {
+      color: #111;
+      background: var(--cream);
+      border-color: var(--cream);
+    }
+
+    .chip i {
+      width: 13px;
+      height: 13px;
+      background: var(--c, var(--green));
+      box-shadow: 0 0 10px var(--c, var(--green));
+      image-rendering: pixelated;
+    }
+
+    .room-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 24px;
+    }
+
+    .room-card {
+      --accent: var(--orange);
+      position: relative;
+      min-width: 0;
+      overflow: hidden;
+      background: linear-gradient(#efebe30b, #00000020), #0d0d11;
+      border: 1px solid #efebe31f;
+      border-radius: 22px;
+      box-shadow: inset 0 0 0 1px #ffffff06, 0 26px 70px #00000052;
+    }
+
+    .room-inner {
+      padding: 18px;
+    }
+
+    .room-band {
+      height: 48px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 0 14px;
+      color: #190806;
+      background:
+        repeating-linear-gradient(0deg, #ffffff22 0 1px, transparent 1px 5px),
+        var(--accent);
+      border-radius: 10px;
+      box-shadow: inset 0 0 0 2px #3b140e24, 0 0 22px color-mix(in srgb, var(--accent) 32%, transparent);
+    }
+
+    .room-band strong {
+      font-size: 17px;
+      font-weight: 900;
+      letter-spacing: .03em;
+      white-space: nowrap;
+    }
+
+    .room-band small {
+      overflow: hidden;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: 2px;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .room-timer {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 6px 10px;
+      color: var(--red);
+      background: #100807;
+      border-radius: 5px;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 12px;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+
+    .room-shot {
+      position: relative;
+      aspect-ratio: 16 / 10;
+      margin-top: 16px;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at 45% 42%, #ffffff30, transparent 18%),
+        radial-gradient(circle at 58% 50%, #000 0 9%, transparent 10%),
+        linear-gradient(135deg, #0b0f0f, #1b1b18 45%, #060607);
+      border-radius: 9px;
+      filter: grayscale(.75) contrast(1.18);
+    }
+
+    .room-shot.alt {
+      background:
+        radial-gradient(circle at 45% 48%, #7fffb54a, transparent 18%),
+        radial-gradient(circle at 58% 55%, #b589ff40, transparent 16%),
+        linear-gradient(135deg, #060806, #151315 55%, #050506);
+      filter: saturate(.75) contrast(1.05);
+    }
+
+    .room-shot::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      opacity: .32;
+      background-image:
+        linear-gradient(#efebe30a 1px, transparent 1px),
+        linear-gradient(90deg, #efebe30a 1px, transparent 1px);
+      background-size: 28px 28px;
+    }
+
+    .room-shot::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background-image: repeating-linear-gradient(0deg, transparent 0 2px, #00000038 2px 3px);
+    }
+
+    .live-label {
+      position: absolute;
+      z-index: 2;
+      top: 16px;
+      left: 16px;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 7px 12px;
+      color: #140504;
+      background: var(--red);
+      border-radius: 4px;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 14px;
+      font-weight: 900;
+      letter-spacing: 2px;
+    }
+
+    .shot-code {
+      position: absolute;
+      z-index: 2;
+      left: 20%;
+      right: 18%;
+      top: 36%;
+      display: grid;
+      gap: 10px;
+      opacity: .76;
+    }
+
+    .shot-code span {
+      height: 9px;
+      border-radius: 999px;
+      background: #efebe330;
+    }
+
+    .shot-code span:nth-child(2) {
+      width: 72%;
+      background: #7fffb552;
+    }
+
+    .shot-code span:nth-child(3) {
+      width: 88%;
+      background: #5fd9ff3a;
+    }
+
+    .room-title {
+      margin: 16px 6px 0;
+      color: var(--cream);
+      font-size: 24px;
+      line-height: 1.12;
+      font-weight: 900;
+      letter-spacing: -0.04em;
+    }
+
+    .room-foot {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin: 28px 6px 0;
+    }
+
+    .host-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+      font-size: 17px;
+      font-weight: 900;
+    }
+
+    .host-avatar {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background:
+        radial-gradient(circle at 36% 30%, #fff4, transparent 26%),
+        linear-gradient(135deg, var(--c, #7eb8ff), #17202c);
+      border: 2px solid #efebe36b;
+      flex: none;
+    }
+
+    .solo {
+      min-height: 34px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 0 13px;
+      color: var(--dim);
+      background: #efebe30a;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 3px;
+    }
+
+    .solo::before {
+      content: "";
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #efebe350;
+    }
+
+    .signal-pill {
+      position: absolute;
+      right: 28px;
+      bottom: 78px;
+      z-index: 4;
+      min-height: 30px;
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 0 10px;
+      color: var(--green);
+      background: #07100de8;
+      border: 1px solid #7fffb558;
+      border-radius: 999px;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: 1px;
+      box-shadow: 0 0 18px #7fffb520;
+    }
+
+    .signal-pill::before {
+      content: "";
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 8px var(--green);
+    }
+
+    .drawer {
+      position: fixed;
+      z-index: 35;
+      top: 74px;
+      left: 50%;
+      width: min(420px, calc(100vw - 36px));
+      max-height: calc(100vh - 96px);
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr);
+      overflow: hidden;
+      background:
+        linear-gradient(180deg, #08120ef2, #050a09f5),
+        var(--screen);
+      border: 1px solid #7fffb552;
+      border-radius: 12px;
+      box-shadow: 0 28px 90px #000000b0, 0 0 38px #7fffb51a;
+      opacity: 0;
+      pointer-events: none;
+      transform: translate(-50%, -8px) scale(.98);
+      visibility: hidden;
+      transition: opacity .18s ease, transform .18s ease, visibility .18s ease;
+    }
+
+    .drawer.open {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translate(-50%, 0) scale(1);
+      visibility: visible;
+    }
+
+    .drawer:target {
+      opacity: 1 !important;
+      pointer-events: auto !important;
+      transform: translate(-50%, 0) scale(1) !important;
+      visibility: visible !important;
+    }
+
+    .drawer-head {
+      padding: 16px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .drawer-kicker {
+      color: var(--green);
+      font-family: "JetBrains Mono", monospace;
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: 2px;
+      margin-bottom: 8px;
+    }
+
+    .drawer-title-row {
+      display: flex;
+      align-items: start;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .drawer h2 {
+      margin: 0;
+      font-size: 24px;
+      line-height: 1.1;
+      letter-spacing: -0.04em;
+    }
+
+    .drawer-close {
+      width: 32px;
+      height: 32px;
+      display: grid;
+      place-items: center;
+      color: var(--dim);
+      background: #efebe305;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      font-size: 20px;
+      flex: none;
+    }
+
+    .drawer-body {
+      overflow: auto;
+      padding: 12px;
+    }
+
+    .signal {
+      --s: var(--green);
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 10px;
+      align-items: center;
+      min-height: 62px;
+      margin-bottom: 8px;
+      padding: 10px;
+      background: #ffffff05;
+      border: 1px solid #efebe31a;
+      border-left: 3px solid var(--s);
+      border-radius: 8px;
+    }
+
+    .signal.marked,
+    .signal:has(.mark input:checked) {
+      background: #ffb54710;
+      border-color: #ffb54766;
+      border-left-color: var(--amber);
+    }
+
+    .signal small {
+      display: block;
+      margin-bottom: 4px;
+      color: var(--s);
+      font-family: "JetBrains Mono", monospace;
+      font-size: 9px;
+      font-weight: 900;
+      letter-spacing: 1.2px;
+    }
+
+    .signal p {
+      margin: 0;
+      color: #efebe3d2;
+      font-size: 12px;
+      line-height: 1.35;
+      word-break: break-word;
+    }
+
+    .signal-actions {
+      display: grid;
+      gap: 6px;
+    }
+
+    .signal-actions label,
+    .signal-actions a {
+      min-height: 27px;
+      min-width: 58px;
+      display: grid;
+      place-items: center;
+      padding: 0 8px;
+      color: var(--dim);
+      background: #00000034;
+      border: 1px solid #efebe31c;
+      border-radius: 5px;
+      font-size: 11px;
+      font-weight: 850;
+      white-space: nowrap;
+    }
+
+    .signal-actions input {
+      position: absolute;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .signal-actions label span:last-child,
+    .signal-actions input:checked + span {
+      display: none;
+    }
+
+    .signal-actions input:checked + span + span {
+      display: inline;
+    }
+
+    .signal-actions label:has(input:checked),
+    .signal-actions a:focus {
+      color: #0a0a0c;
+      background: var(--green);
+      border-color: var(--green);
+    }
+
+    .close-room {
+      width: 100%;
+      min-width: 0;
+      min-height: 38px;
+      display: grid;
+      place-items: center;
+      margin-top: 12px;
+      color: var(--amber);
+      background: #ffb54712;
+      border: 1px solid #ffb54766;
+      border-radius: 8px;
+      font-size: 11px;
+      font-weight: 900;
+      white-space: normal;
+      text-align: center;
+      overflow: hidden;
+      overflow-wrap: anywhere;
+    }
+
+    .toast {
+      position: fixed;
+      z-index: 50;
+      right: 18px;
+      bottom: 18px;
+      width: min(330px, calc(100vw - 36px));
+      padding: 12px 14px;
+      color: var(--cream);
+      background: #08120ef0;
+      border: 1px solid #7fffb566;
+      border-radius: 8px;
+      box-shadow: 0 18px 44px #0000008c;
+      font-size: 13px;
+      opacity: 0;
+      transform: translateY(12px);
+      pointer-events: none;
+      transition: .2s;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    @keyframes sweep {
+      to {
+        transform: translateY(calc(100vh + 240px));
+      }
+    }
+
+    @keyframes blink {
+      50% {
+        opacity: .25;
+      }
+    }
+
+    @media (max-width: 1260px) {
+      .shell {
+        grid-template-columns: 1fr;
+      }
+
+      .left-rail {
+        display: none;
+      }
+    }
+
+    @media (max-width: 860px) {
+      .topbar {
+        position: relative;
+        flex-wrap: wrap;
+      }
+
+      .brand {
+        width: 100%;
+      }
+
+      .my-stream {
+        margin-left: 0;
+      }
+
+      .top-spacer {
+        display: none;
+      }
+
+      .room-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .main {
+        padding: 22px 12px 36px;
+      }
+
+      .chip {
+        min-height: 48px;
+        padding: 0 16px;
+        font-size: 13px;
+      }
+    }
+
+    @media (max-width: 560px) {
+      .topbar > .icon-btn,
+      .avatar-btn {
+        display: none;
+      }
+
+      .go-live,
+      .my-stream {
+        flex: 1;
+      }
+
+      .room-band {
+        height: auto;
+        min-height: 48px;
+        flex-wrap: wrap;
+        padding: 8px 10px;
+      }
+
+      .room-title {
+        font-size: 21px;
+      }
+
+      .room-foot {
+        align-items: stretch;
+        flex-direction: column;
+      }
+
+      .signal-pill {
+        right: 24px;
+        bottom: 92px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        animation: none !important;
+        transition: none !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <div class="scan"></div>
+    <div class="sweep"></div>
+
+    <header class="topbar">
+      <div class="brand">
+        <span class="logo" aria-hidden="true">
+          <span class="px w"></span><span class="px"></span><span class="px"></span><span class="px"></span><span class="px"></span><span class="px"></span><span class="px w"></span>
+          <span class="px w"></span><span class="px w"></span><span class="px"></span><span class="px"></span><span class="px"></span><span class="px w"></span><span class="px w"></span>
+          <span class="px w"></span><span class="px g"></span><span class="px w"></span><span class="px"></span><span class="px w"></span><span class="px g"></span><span class="px w"></span>
+          <span class="px w"></span><span class="px"></span><span class="px g"></span><span class="px lg"></span><span class="px g"></span><span class="px"></span><span class="px w"></span>
+          <span class="px w"></span><span class="px"></span><span class="px"></span><span class="px"></span><span class="px"></span><span class="px"></span><span class="px w"></span>
+          <span class="px w"></span><span class="px"></span><span class="px"></span><span class="px"></span><span class="px"></span><span class="px"></span><span class="px w"></span>
+        </span>
+        <span class="brand-name">merging</span>
+        <span class="dot" aria-hidden="true"></span>
+      </div>
+      <button class="my-stream" type="button">我的直播 <small>MY STREAM</small></button>
+      <div class="top-spacer"></div>
+      <button class="icon-btn" type="button">●</button>
+      <button class="icon-btn" type="button">EN</button>
+      <button class="go-live" type="button"><span class="dot" aria-hidden="true"></span>开播 · GO LIVE</button>
+      <button class="avatar-btn" type="button"><span class="avatar"></span>兜兜</button>
+    </header>
+
+    <section class="shell">
+      <aside class="left-rail">
+        <section class="panel calendar">
+          <div class="panel-inner">
+            <h1>本周活动日历</h1>
+            <div class="tabs"><button class="active">列表</button><button>本周</button><button>历史</button></div>
+            <div class="event-row">
+              <span class="date-chip">周五 21:00</span>
+              <span class="event-thumb"></span>
+              <div class="event-main">
+                <strong>AI侦探游戏项目复盘</strong>
+                <span>创作者首次分享下整个项目过程</span>
+              </div>
+              <div class="event-meta">2 预约<br />VIEW</div>
+            </div>
+            <div class="calendar-foot">本周 1 个活动 · 0 个互动中 · 0 个待定</div>
+          </div>
+        </section>
+
+        <section class="forest">
+          <div class="panel-inner">
+            <div class="forest-head">
+              <div>
+                <div class="kicker">FOREST BOARD</div>
+                <h2>Merging 森友会</h2>
+              </div>
+              <span class="forest-count">15 位森友</span>
+            </div>
+            <input class="search" value="" placeholder="搜索森友 nickname / username" />
+            <div class="friends">
+              <div class="friend" style="--friend:#7fffb5"><div class="friend-avatar"></div><strong>大叉</strong><span>创造是目的</span></div>
+              <div class="friend" style="--friend:#ffb547"><div class="friend-avatar"></div><strong>鹤仔</strong><span>这里是我的云端</span></div>
+              <div class="friend" style="--friend:#7eb8ff"><div class="friend-avatar"></div><strong>兜兜</strong><span>Merging 官方</span></div>
+              <div class="friend" style="--friend:#b589ff"><div class="friend-avatar"></div><strong>keith</strong><span>找不到身份证</span></div>
+              <div class="friend" style="--friend:#ff7a3d"><div class="friend-avatar"></div><strong>dk</strong><span>布洛芬爱好者</span></div>
+              <div class="friend" style="--friend:#c6ff5c"><div class="friend-avatar"></div><strong>派trick</strong><span>我 ❤ merging</span></div>
+              <div class="friend" style="--friend:#ff6b6b"><div class="friend-avatar"></div><strong>HanZephyr</strong><span>还是有写 bio</span></div>
+              <div class="friend" style="--friend:#efebe3"><div class="friend-avatar"></div><strong>八神桑龙张钊</strong><span>一个缓慢爬行的蜗牛</span></div>
+            </div>
+          </div>
+        </section>
+      </aside>
+
+      <section class="main">
+        <div class="chips" aria-label="room filters">
+          <button class="chip active" type="button"><i style="--c:#7eb8ff"></i>ALL 全部 2</button>
+          <button class="chip" type="button"><i style="--c:#7eb8ff"></i>自习室 0</button>
+          <button class="chip" type="button"><i style="--c:#7fffb5"></i>从零开始 0</button>
+          <button class="chip" type="button"><i style="--c:#ffb547"></i>求大神指点 0</button>
+          <button class="chip" type="button"><i style="--c:#b589ff"></i>啃新东西 0</button>
+          <button class="chip" type="button"><i style="--c:#c6ff5c"></i>求反馈 0</button>
+          <button class="chip" type="button"><i style="--c:#ff6b6b"></i>赶 DDL 0</button>
+        </div>
+
+        <div class="room-grid">
+          <article class="room-card" data-room="Lexispace 猜词游戏" data-signals="3">
+            <div class="room-inner">
+              <div class="room-band">
+                <strong>疯狂迭代 <small>ITERATE</small></strong>
+                <small>反复打磨 · 不停改</small>
+                <span class="room-timer"><span class="dot"></span>LIVE 36:19</span>
+              </div>
+              <div class="room-shot">
+                <span class="live-label">LIVE</span>
+              </div>
+              <h2 class="room-title">Lexispace 猜词游戏</h2>
+              <a class="signal-pill" href="#lexispace-signals">ROOM SIGNALS 3</a>
+              <div class="room-foot">
+                <div class="host-row"><span class="host-avatar" style="--c:#ffb547"></span>@鹤仔</div>
+                <span class="solo">SOLO</span>
+              </div>
+            </div>
+          </article>
+
+          <article class="room-card" data-room="写cli-我只想给大家分享vibe coding的时候听nujabes有多爽" data-signals="2">
+            <div class="room-inner">
+              <div class="room-band">
+                <strong>疯狂迭代 <small>ITERATE</small></strong>
+                <small>反复打磨 · 不停改</small>
+                <span class="room-timer"><span class="dot"></span>LIVE 33:19</span>
+              </div>
+              <div class="room-shot alt">
+                <span class="live-label">LIVE</span>
+                <div class="shot-code"><span></span><span></span><span></span></div>
+              </div>
+              <h2 class="room-title">写cli-我只想给大家分享vibe coding的时候听nujabes有多爽</h2>
+              <a class="signal-pill" href="#cli-signals">ROOM SIGNALS 2</a>
+              <div class="room-foot">
+                <div class="host-row"><span class="host-avatar" style="--c:#7eb8ff"></span>@大岛</div>
+                <span class="solo">SOLO</span>
+              </div>
+            </div>
+          </article>
+        </div>
+      </section>
+    </section>
+
+    <aside class="drawer" id="lexispace-signals" aria-label="Lexispace room signal drawer">
+      <div class="drawer-head">
+        <div class="drawer-kicker">IN ROOM ONLY</div>
+        <div class="drawer-title-row">
+          <h2>Lexispace 猜词游戏</h2>
+          <a class="drawer-close" href="#">×</a>
+        </div>
+      </div>
+      <div class="drawer-body">
+        <div>
+          <div class="signal" style="--s:var(--green)">
+            <div><small>LINK</small><p>https://lexispace.fun/play</p></div>
+            <div class="signal-actions">
+              <label class="mark"><input type="checkbox"><span>高光</span><span>已高光</span></label>
+              <label><input type="checkbox"><span>稍后</span><span>已收</span></label>
+            </div>
+          </div>
+          <div class="signal" style="--s:var(--amber)">
+            <div><small>FEEDBACK</small><p>第一轮说明可以再短一点，直接让人开始猜。</p></div>
+            <div class="signal-actions">
+              <label class="mark"><input type="checkbox"><span>高光</span><span>已高光</span></label>
+              <label><input type="checkbox"><span>稍后</span><span>已收</span></label>
+            </div>
+          </div>
+          <div class="signal" style="--s:var(--violet)">
+            <div><small>GITHUB</small><p>github.com/hezi/lexispace</p></div>
+            <div class="signal-actions">
+              <label class="mark"><input type="checkbox"><span>高光</span><span>已高光</span></label>
+              <label><input type="checkbox"><span>稍后</span><span>已收</span></label>
+            </div>
+          </div>
+        </div>
+        <a class="close-room" href="#">关闭后沉淀</a>
+      </div>
+    </aside>
+
+    <aside class="drawer" id="cli-signals" aria-label="CLI room signal drawer">
+      <div class="drawer-head">
+        <div class="drawer-kicker">IN ROOM ONLY</div>
+        <div class="drawer-title-row">
+          <h2>写cli-听nujabes</h2>
+          <a class="drawer-close" href="#">×</a>
+        </div>
+      </div>
+      <div class="drawer-body">
+        <div>
+          <div class="signal" style="--s:var(--violet)">
+            <div><small>LINK</small><p>github.com/oshima/vibe-cli</p></div>
+            <div class="signal-actions">
+              <label class="mark"><input type="checkbox"><span>高光</span><span>已高光</span></label>
+              <label><input type="checkbox"><span>稍后</span><span>已收</span></label>
+            </div>
+          </div>
+          <div class="signal" style="--s:var(--cyan)">
+            <div><small>MOMENT</small><p>音乐流派这个点可以成为回放标题。</p></div>
+            <div class="signal-actions">
+              <label class="mark"><input type="checkbox"><span>高光</span><span>已高光</span></label>
+              <label><input type="checkbox"><span>稍后</span><span>已收</span></label>
+            </div>
+          </div>
+        </div>
+        <a class="close-room" href="#">关闭后沉淀</a>
+      </div>
+    </aside>
+
+    <div class="toast" id="toast"></div>
+  </main>
+</body>
+</html>

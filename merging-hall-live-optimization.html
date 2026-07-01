@@ -1,0 +1,1698 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Merging Hall + Live Optimization</title>
+  <!--
+    Claude Design system declaration:
+    Keep Merging's existing lobby as the product center. History appears as a compact project-notes band
+    after active rooms. Live-room highlights live inside chat, with pinned snippets that can be copied.
+  -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;600;700;800;900&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #08080a;
+      --panel: #151518;
+      --panel-2: #1b1b1f;
+      --cream: #efebe3;
+      --muted: #efebe38a;
+      --line: #efebe31d;
+      --green: #7fffb5;
+      --red: #ff3b2f;
+      --amber: #ffb547;
+      --cyan: #64d7ff;
+      --blue: #78aaff;
+      --lime: #c8ff5d;
+      --pink: #ff4ee0;
+      --orange: #ff7a3d;
+      color-scheme: dark;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      background: var(--bg);
+    }
+
+    body {
+      min-height: 100vh;
+      margin: 0;
+      overflow-x: hidden;
+      color: var(--cream);
+      background:
+        radial-gradient(920px 540px at 4% -18%, #7fffb512, transparent 60%),
+        radial-gradient(780px 520px at 110% 100%, #b589ff12, transparent 62%),
+        linear-gradient(#09090b, #08070b);
+      font-family: Inter, "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    button,
+    input {
+      font: inherit;
+    }
+
+    button {
+      color: inherit;
+      cursor: pointer;
+      background: transparent;
+      border: 0;
+    }
+
+    .scan,
+    .sweep {
+      pointer-events: none;
+      position: fixed;
+      inset: 0;
+    }
+
+    .scan {
+      z-index: 30;
+      opacity: .38;
+      background-image: repeating-linear-gradient(0deg, transparent 0 3px, #0000002d 3px 4px);
+    }
+
+    .sweep {
+      z-index: 31;
+      top: -120px;
+      height: 120px;
+      background: linear-gradient(180deg, transparent, #7fffb50f, transparent);
+      animation: sweep 12s linear infinite;
+    }
+
+    .app {
+      position: relative;
+      z-index: 1;
+      min-height: 100vh;
+    }
+
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 18px;
+      align-items: center;
+      min-height: 70px;
+      padding: 10px 22px;
+      background: #09090be8;
+      border-bottom: 1px solid var(--line);
+      backdrop-filter: blur(18px);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .logo {
+      display: grid;
+      grid-template-columns: repeat(7, 4px);
+      grid-auto-rows: 4px;
+      filter: drop-shadow(0 0 6px #7fffb599);
+      flex: none;
+    }
+
+    .px {
+      width: 4px;
+      height: 4px;
+    }
+
+    .w {
+      background: var(--cream);
+    }
+
+    .g {
+      background: var(--green);
+    }
+
+    .brand-name {
+      overflow: hidden;
+      font-size: 25px;
+      font-weight: 900;
+      letter-spacing: -0.05em;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .live-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--red);
+      box-shadow: 0 0 9px var(--red);
+      animation: blink 1s infinite;
+      flex: none;
+    }
+
+    .view-switch {
+      justify-self: center;
+      display: inline-flex;
+      gap: 10px;
+      padding: 4px;
+      background: #0d0d10c8;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+    }
+
+    .view-tab {
+      min-height: 38px;
+      padding: 0 20px;
+      color: var(--muted);
+      border-radius: 999px;
+      font-size: 15px;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+
+    .view-tab small {
+      margin-left: 8px;
+      color: var(--muted);
+      font-family: "JetBrains Mono", monospace;
+      font-size: 10px;
+      letter-spacing: 2px;
+    }
+
+    .view-tab.active {
+      color: var(--cream);
+      background: #efebe30e;
+      box-shadow: inset 0 0 0 1px var(--line);
+    }
+
+    .top-actions {
+      display: flex;
+      justify-content: end;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .icon-btn,
+    .go-live,
+    .avatar-btn {
+      min-height: 44px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--muted);
+      background: #efebe305;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 12px;
+      font-weight: 800;
+      white-space: nowrap;
+    }
+
+    .icon-btn {
+      width: 44px;
+    }
+
+    .go-live {
+      gap: 9px;
+      min-width: 148px;
+      color: var(--green);
+      border-color: #7fffb566;
+      box-shadow: 0 0 24px #7fffb512;
+      letter-spacing: 1.8px;
+    }
+
+    .avatar-btn {
+      gap: 8px;
+      min-width: 108px;
+      color: var(--cream);
+      padding: 0 12px;
+      border-radius: 999px;
+    }
+
+    .avatar {
+      --avatar-url: none;
+      width: 34px;
+      height: 34px;
+      display: inline-block;
+      border: 2px solid #efebe370;
+      border-radius: 50%;
+      background:
+        var(--avatar-url) center / cover no-repeat,
+        radial-gradient(circle at 35% 28%, #ffffff42, transparent 28%),
+        linear-gradient(135deg, var(--avatar-color, #7eb8ff), #171b24);
+      box-shadow: 0 0 14px color-mix(in srgb, var(--avatar-color, #7eb8ff) 40%, transparent);
+      flex: none;
+    }
+
+    .avatar.han {
+      --avatar-url: url("assets/avatars/hanzephyr-crew.png");
+      --avatar-color: #ff7a3d;
+    }
+
+    .avatar.han-profile {
+      --avatar-url: url("assets/avatars/hanzephyr-profile.png");
+      --avatar-color: #ff7a3d;
+    }
+
+    .avatar.doudou {
+      --avatar-url: url("assets/avatars/doudou-crew.png");
+      --avatar-color: #7eb8ff;
+    }
+
+    .avatar.doudou-top {
+      --avatar-url: url("assets/avatars/doudou-top.png");
+      --avatar-color: #7eb8ff;
+    }
+
+    .avatar.danniu {
+      --avatar-url: url("assets/avatars/danniu-crew.png");
+      --avatar-color: #ffb547;
+    }
+
+    .avatar.keith {
+      --avatar-color: #8f7aff;
+    }
+
+    .avatar.frog {
+      --avatar-color: #7fffb5;
+    }
+
+    .view {
+      display: none;
+      min-height: calc(100vh - 70px);
+    }
+
+    .view.active {
+      display: block;
+    }
+
+    .hall {
+      display: grid;
+      grid-template-columns: minmax(320px, 37vw) minmax(0, 1fr);
+    }
+
+    .left-rail {
+      min-height: calc(100vh - 70px);
+      background:
+        linear-gradient(#06110df0, #07100ced),
+        repeating-linear-gradient(90deg, #7fffb50b 0 1px, transparent 1px 88px);
+      border-right: 1px solid var(--line);
+    }
+
+    .rail-panel,
+    .history-board,
+    .crew-card,
+    .chat-card {
+      position: relative;
+      overflow: hidden;
+    }
+
+    .rail-panel:before,
+    .history-board:before,
+    .crew-card:before,
+    .chat-card:before {
+      content: "";
+      pointer-events: none;
+      position: absolute;
+      inset: 0;
+      opacity: .25;
+      background-image:
+        linear-gradient(#7fffb51e 1px, transparent 1px),
+        linear-gradient(90deg, #7fffb51e 1px, transparent 1px);
+      background-size: 86px 56px;
+    }
+
+    .rail-inner {
+      position: relative;
+      z-index: 1;
+      padding: 28px 32px;
+    }
+
+    .rail-panel {
+      border-bottom: 1px solid #7fffb533;
+    }
+
+    .rail-panel h1,
+    .history-board h2 {
+      margin: 0;
+      font-size: 30px;
+      line-height: 1.05;
+      font-weight: 800;
+      letter-spacing: -0.05em;
+    }
+
+    .seg {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      width: min(270px, 100%);
+      margin: 34px 0 28px;
+      padding: 4px;
+      background: #00000044;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+    }
+
+    .seg button {
+      min-height: 38px;
+      color: var(--muted);
+      border-radius: 7px;
+      font-size: 14px;
+      font-weight: 900;
+    }
+
+    .seg button.active {
+      color: var(--cream);
+      background: #7fffb520;
+      box-shadow: inset 0 0 0 1px #7fffb555;
+    }
+
+    .event-row {
+      display: grid;
+      grid-template-columns: 132px 72px minmax(0, 1fr) auto;
+      gap: 16px;
+      align-items: center;
+      min-height: 110px;
+    }
+
+    .date-chip {
+      min-height: 44px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: #7eb8ff;
+      border: 1px solid #7eb8ff8a;
+      border-radius: 8px;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 16px;
+      font-weight: 900;
+    }
+
+    .event-thumb {
+      width: 68px;
+      height: 68px;
+      border-radius: 8px;
+      background:
+        radial-gradient(circle at 70% 18%, #ffb5477d, transparent 34%),
+        linear-gradient(135deg, #321b0f, #0f1414);
+      border: 1px solid #efebe32f;
+    }
+
+    .event-main {
+      min-width: 0;
+    }
+
+    .event-main strong {
+      display: block;
+      font-size: 21px;
+      font-weight: 900;
+      line-height: 1.2;
+    }
+
+    .event-main span,
+    .event-meta {
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.35;
+    }
+
+    .event-meta {
+      text-align: right;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 13px;
+    }
+
+    .forest {
+      margin: 24px 0 0;
+      background:
+        repeating-linear-gradient(90deg, #5d391a4d 0 28px, #123c2636 28px 56px),
+        linear-gradient(#0c1812, #08120d);
+      border: 1px solid #ffb54758;
+      border-radius: 10px;
+      box-shadow: inset 0 0 0 2px #5f3b1e3d, 0 20px 50px #00000055;
+    }
+
+    .kicker {
+      margin-bottom: 8px;
+      color: #7eb8ff;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: 3px;
+    }
+
+    .forest h2 {
+      margin: 0;
+      font-size: 30px;
+      font-weight: 900;
+      letter-spacing: -0.05em;
+    }
+
+    .friend-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .friend {
+      min-width: 0;
+      padding: 12px 8px;
+      text-align: center;
+      background: #efebe308;
+      border: 1px solid #efebe320;
+      border-radius: 10px;
+    }
+
+    .friend .avatar {
+      width: 64px;
+      height: 64px;
+      margin: 0 auto 9px;
+      border-radius: 18px;
+    }
+
+    .friend strong,
+    .friend span {
+      display: block;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .friend strong {
+      font-size: 14px;
+      font-weight: 900;
+    }
+
+    .friend span {
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .hall-main {
+      min-width: 0;
+      padding: 40px 24px 36px;
+    }
+
+    .chips {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      overflow-x: auto;
+      padding: 0 0 36px;
+      scrollbar-width: none;
+    }
+
+    .chips::-webkit-scrollbar {
+      display: none;
+    }
+
+    .chip {
+      min-height: 58px;
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      padding: 0 24px;
+      color: var(--muted);
+      background: #efebe305;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      font-size: 15px;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+
+    .chip.active {
+      color: #111;
+      background: var(--cream);
+      border-color: var(--cream);
+    }
+
+    .chip i {
+      width: 13px;
+      height: 13px;
+      background: var(--c, var(--green));
+      box-shadow: 0 0 10px var(--c, var(--green));
+    }
+
+    .room-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 24px;
+    }
+
+    .room-card {
+      min-width: 0;
+      overflow: hidden;
+      background: linear-gradient(#efebe30b, #00000020), #0d0d11;
+      border: 1px solid #efebe31f;
+      border-radius: 22px;
+      box-shadow: inset 0 0 0 1px #ffffff06, 0 26px 70px #00000052;
+      cursor: pointer;
+      transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease;
+    }
+
+    .room-card:hover,
+    .room-card:focus-visible {
+      border-color: #7fffb56b;
+      box-shadow: inset 0 0 0 1px #ffffff08, 0 28px 72px #00000060, 0 0 0 1px #7fffb51c;
+      transform: translateY(-2px);
+      outline: none;
+    }
+
+    .room-card:active {
+      transform: translateY(0);
+    }
+
+    .room-band {
+      min-height: 50px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin: 16px 18px 14px;
+      padding: 0 14px;
+      color: #15100b;
+      background:
+        linear-gradient(90deg, #ff7a3d, #ff9a54 52%, #ff6537),
+        repeating-linear-gradient(0deg, #00000022 0 2px, transparent 2px 5px);
+      border-radius: 8px;
+      box-shadow: 0 0 18px #ff7a3d45;
+    }
+
+    .room-band strong {
+      overflow: hidden;
+      font-size: 17px;
+      font-weight: 900;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .room-band span {
+      color: #1a0d08bd;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: 2px;
+      white-space: nowrap;
+    }
+
+    .room-screen {
+      position: relative;
+      height: 235px;
+      margin: 0 18px;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at 47% 46%, #ffffff42, transparent 9%),
+        radial-gradient(circle at 58% 50%, #7fffb529, transparent 12%),
+        linear-gradient(90deg, #0a0b0c, #020203);
+      border-radius: 8px;
+    }
+
+    .room-screen:after {
+      content: "LIVE";
+      position: absolute;
+      top: 18px;
+      left: 18px;
+      padding: 10px 14px;
+      color: #160705;
+      background: #ff5546;
+      border-radius: 4px;
+      font-family: "JetBrains Mono", monospace;
+      font-weight: 900;
+      letter-spacing: 3px;
+    }
+
+    .room-body {
+      padding: 16px 20px 20px;
+    }
+
+    .room-title {
+      margin: 0 0 18px;
+      overflow-wrap: anywhere;
+      font-size: 24px;
+      line-height: 1.05;
+      font-weight: 900;
+      letter-spacing: -0.04em;
+    }
+
+    .host-row,
+    .host {
+      display: flex;
+      align-items: center;
+    }
+
+    .host-row {
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .host {
+      gap: 10px;
+      min-width: 0;
+      font-weight: 900;
+    }
+
+    .host .avatar {
+      width: 42px;
+      height: 42px;
+    }
+
+    .solo {
+      padding: 8px 14px;
+      color: var(--muted);
+      background: #efebe30a;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: 3px;
+    }
+
+    .history-board {
+      margin-top: 24px;
+      padding: 18px;
+      background:
+        linear-gradient(90deg, #07140f, #121016),
+        repeating-linear-gradient(90deg, #7fffb50b 0 1px, transparent 1px 86px);
+      border: 1px solid #7fffb542;
+      border-radius: 14px;
+    }
+
+    .history-board > * {
+      position: relative;
+      z-index: 1;
+    }
+
+    .history-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 18px;
+      align-items: end;
+      margin-bottom: 18px;
+    }
+
+    .history-count {
+      color: var(--amber);
+      font-size: 12px;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+
+    .notes-row {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .note-ticket {
+      min-width: 0;
+      padding: 14px 14px 12px;
+      background: #00000038;
+      border: 1px solid #ffb5474a;
+      border-radius: 10px;
+    }
+
+    .note-ticket small {
+      color: var(--amber);
+      font-family: "JetBrains Mono", monospace;
+      font-size: 9px;
+      font-weight: 900;
+      letter-spacing: 1.4px;
+    }
+
+    .note-ticket strong {
+      display: block;
+      overflow: hidden;
+      margin-top: 8px;
+      font-size: 14px;
+      font-weight: 900;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .note-ticket span {
+      display: block;
+      margin-top: 5px;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.35;
+    }
+
+    .live {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(360px, 29vw);
+      gap: 26px;
+      padding: 28px 24px 40px;
+    }
+
+    .stage-area {
+      min-width: 0;
+    }
+
+    .stream-head {
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr) auto;
+      gap: 22px;
+      align-items: center;
+      min-height: 98px;
+      margin-bottom: 18px;
+      padding: 14px 18px;
+      background: #efebe306;
+      border: 1px solid var(--line);
+      border-radius: 18px;
+    }
+
+    .profile {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      min-width: 0;
+    }
+
+    .profile .avatar {
+      width: 64px;
+      height: 64px;
+      border-color: var(--pink);
+      box-shadow: 0 0 0 3px #0b0b0d, 0 0 22px #ff4ee04a;
+    }
+
+    .profile strong {
+      font-size: 21px;
+      font-weight: 900;
+    }
+
+    .follow {
+      min-height: 28px;
+      padding: 0 12px;
+      color: var(--muted);
+      background: #efebe30a;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: 2px;
+    }
+
+    .stream-title {
+      min-width: 0;
+      padding-left: 22px;
+      border-left: 1px solid var(--line);
+    }
+
+    .stream-title h1 {
+      margin: 0;
+      overflow: hidden;
+      font-size: 26px;
+      line-height: 1.08;
+      font-weight: 900;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      margin-left: 10px;
+      padding: 5px 10px;
+      color: var(--lime);
+      background: #c6ff5c12;
+      border: 1px solid #c6ff5c59;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 900;
+      vertical-align: middle;
+    }
+
+    .stage {
+      position: relative;
+      min-height: calc(100vh - 220px);
+      overflow: hidden;
+      background: #05030d;
+      border: 1px solid #342a44;
+      border-radius: 22px;
+      box-shadow: inset 0 0 0 1px #ffffff05, 0 24px 70px #00000052;
+    }
+
+    .stage:before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(600px 360px at 50% 80%, #b589ff12, transparent 70%),
+        linear-gradient(90deg, #05030d, #07030f);
+    }
+
+    .stage-badges {
+      position: absolute;
+      top: 18px;
+      left: 18px;
+      z-index: 1;
+      display: flex;
+      gap: 10px;
+    }
+
+    .badge {
+      min-height: 42px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 0 16px;
+      color: var(--cream);
+      background: #efebe30a;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 12px;
+      font-weight: 900;
+    }
+
+    .badge.live-red {
+      color: #fff;
+      background: #e6003f;
+      border-color: #e6003f;
+    }
+
+    .stage-name {
+      position: absolute;
+      top: 22px;
+      left: 170px;
+      z-index: 1;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 170px;
+      font-size: 28px;
+      font-weight: 900;
+      text-shadow: 0 0 12px #ffffff33;
+    }
+
+    .stage-avatar {
+      position: absolute;
+      right: 52px;
+      bottom: 36px;
+      width: 92px;
+      height: 138px;
+      border-radius: 46px 46px 18px 18px;
+      background:
+        radial-gradient(circle at 50% 34%, #efebe3 0 28px, transparent 29px),
+        linear-gradient(#ff6b8f 0 54%, #efebe3 55%);
+      box-shadow: 0 0 28px #ff6b8f33;
+      z-index: 1;
+    }
+
+    .side {
+      display: grid;
+      grid-template-rows: auto minmax(0, 1fr);
+      gap: 22px;
+      height: calc(100vh - 138px);
+      min-height: 620px;
+      min-width: 0;
+    }
+
+    .crew-card,
+    .chat-card {
+      background: #18181bf0;
+      border: 1px solid var(--line);
+      border-radius: 28px;
+      box-shadow: inset 0 0 0 1px #ffffff05, 0 24px 70px #00000045;
+    }
+
+    .crew-card {
+      min-height: 292px;
+      padding: 24px;
+    }
+
+    .crew-card > *,
+    .chat-card > * {
+      position: relative;
+      z-index: 1;
+    }
+
+    .crew-title {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 22px;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 19px;
+      font-weight: 900;
+      letter-spacing: 5px;
+    }
+
+    .crew-title i {
+      width: 16px;
+      height: 16px;
+      background: var(--pink);
+      transform: rotate(45deg);
+    }
+
+    .mic-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 22px;
+      font-family: "JetBrains Mono", monospace;
+      font-weight: 900;
+      letter-spacing: 4px;
+    }
+
+    .speaking {
+      padding: 9px 14px;
+      color: var(--green);
+      background: #7fffb516;
+      border: 1px solid #7fffb545;
+      border-radius: 999px;
+      font-family: Inter, sans-serif;
+      letter-spacing: 0;
+    }
+
+    .crew-avatars {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 22px;
+    }
+
+    .crew-person {
+      display: grid;
+      justify-items: center;
+      gap: 7px;
+      min-width: 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .crew-person .avatar {
+      width: 66px;
+      height: 66px;
+      border-radius: 14px;
+    }
+
+    .crew-person.is-speaking .avatar {
+      border-color: var(--green);
+      box-shadow: 0 0 0 3px #102018, 0 0 28px #7fffb54a;
+    }
+
+    .crew-actions {
+      display: grid;
+      grid-template-columns: 50px 1fr 94px 116px;
+      gap: 10px;
+      padding: 12px;
+      background: #09090c;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+    }
+
+    .crew-actions button {
+      min-height: 46px;
+      color: var(--muted);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: 1.5px;
+    }
+
+    .crew-actions .share {
+      color: var(--green);
+      border-color: #7fffb552;
+    }
+
+    .crew-actions .leave {
+      color: #ff6b6b;
+      border-color: #ff6b6b55;
+    }
+
+    .chat-card {
+      min-height: 0;
+      display: grid;
+      grid-template-rows: auto auto auto minmax(0, 1fr) auto;
+    }
+
+    .chat-tabs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      padding: 12px 16px;
+      background: #111114;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .chat-tabs button {
+      min-height: 44px;
+      color: var(--muted);
+      background: #09090c;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 800;
+    }
+
+    .chat-tabs button.active {
+      color: var(--green);
+      background: #222225;
+      box-shadow: inset 0 0 0 1px #ffffff08, 0 8px 18px #00000033;
+    }
+
+    .chat-head {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 12px;
+      align-items: center;
+      min-height: 58px;
+      padding: 0 18px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .chat-title {
+      color: var(--green);
+      font-size: 20px;
+      font-weight: 900;
+    }
+
+    .pin-toggle {
+      min-height: 44px;
+      display: inline-flex;
+      align-items: center;
+      padding: 0 12px;
+      color: var(--amber);
+      background: #ffb54712;
+      border: 1px solid #ffb54766;
+      border-radius: 10px;
+      font-family: "JetBrains Mono", monospace;
+      font-size: 11px;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+
+    .pin-tray {
+      display: grid;
+      gap: 6px;
+      padding: 8px 12px 10px;
+      background: linear-gradient(90deg, #ffb5470f, transparent 38%), #101012;
+      border-bottom: 1px solid #ffb54735;
+    }
+
+    .pin-item {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 10px;
+      align-items: center;
+      min-height: 42px;
+      padding: 6px 8px;
+      background: #00000042;
+      border: 1px solid #ffb5474d;
+      border-radius: 10px;
+    }
+
+    .pin-item p {
+      margin: 0;
+      overflow: hidden;
+      color: var(--cream);
+      font-size: 13px;
+      line-height: 1.35;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .pin-item small {
+      color: var(--amber);
+      font-family: "JetBrains Mono", monospace;
+      font-size: 9px;
+      font-weight: 900;
+      letter-spacing: 1.2px;
+    }
+
+    .pin-item button,
+    .message-pin {
+      min-height: 30px;
+      padding: 0 9px;
+      color: var(--amber);
+      background: #ffb54710;
+      border: 1px solid #ffb54755;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+
+    .messages {
+      min-height: 0;
+      overflow: auto;
+      padding: 14px 18px;
+    }
+
+    .message {
+      display: grid;
+      grid-template-columns: 62px minmax(0, 1fr) auto;
+      gap: 8px;
+      align-items: baseline;
+      min-height: 30px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .message time {
+      color: #efebe34b;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .message strong {
+      color: var(--cyan);
+      font-weight: 900;
+    }
+
+    .message span {
+      min-width: 0;
+      color: var(--cream);
+      line-height: 1.4;
+    }
+
+    .message.pinned {
+      margin: 6px -8px;
+      padding: 7px 8px;
+      background: #ffb5470c;
+      border: 1px solid #ffb54730;
+      border-radius: 10px;
+    }
+
+    .history-sep {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      gap: 10px;
+      align-items: center;
+      margin: 18px 0;
+      color: #efebe348;
+      font-size: 12px;
+    }
+
+    .history-sep:before,
+    .history-sep:after {
+      content: "";
+      height: 1px;
+      background: var(--line);
+    }
+
+    .composer {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 50px 78px;
+      gap: 8px;
+      padding: 10px 12px 12px;
+      background: #111114;
+      border-top: 1px solid var(--line);
+    }
+
+    .composer input {
+      min-width: 0;
+      height: 46px;
+      color: var(--cream);
+      background: #030303;
+      border: 1px solid #000;
+      border-radius: 12px;
+      padding: 0 16px;
+      font-size: 16px;
+      outline: none;
+    }
+
+    .composer button {
+      height: 46px;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 900;
+    }
+
+    .composer .send {
+      color: var(--green);
+      background: #7fffb51a;
+      border: 1px solid #7fffb55a;
+    }
+
+    .toast {
+      position: fixed;
+      z-index: 50;
+      right: 18px;
+      bottom: 18px;
+      width: min(340px, calc(100vw - 36px));
+      padding: 12px 14px;
+      opacity: 0;
+      transform: translateY(12px);
+      pointer-events: none;
+      color: var(--cream);
+      background: #08120ef0;
+      border: 1px solid #7fffb566;
+      border-radius: 8px;
+      box-shadow: 0 18px 44px #0000008c;
+      font-size: 13px;
+      transition: .2s;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    @keyframes sweep {
+      to {
+        transform: translateY(calc(100vh + 240px));
+      }
+    }
+
+    @keyframes blink {
+      50% {
+        opacity: .25;
+      }
+    }
+
+    @media (max-width: 1220px) {
+      .hall {
+        grid-template-columns: 1fr;
+      }
+
+      .left-rail {
+        display: none;
+      }
+
+      .live {
+        grid-template-columns: 1fr;
+      }
+
+      .side {
+        height: auto;
+        min-height: 0;
+      }
+
+      .chat-card {
+        min-height: 560px;
+      }
+    }
+
+    @media (max-width: 860px) {
+      .topbar {
+        grid-template-columns: 1fr;
+        justify-items: stretch;
+      }
+
+      .brand {
+        justify-content: center;
+      }
+
+      .view-switch,
+      .top-actions {
+        justify-content: center;
+      }
+
+      .hall-main,
+      .live {
+        padding: 18px 12px 32px;
+      }
+
+      .room-grid,
+      .notes-row {
+        grid-template-columns: 1fr;
+      }
+
+      .stream-head,
+      .message {
+        grid-template-columns: 1fr;
+      }
+
+      .stream-title {
+        padding-left: 0;
+        border-left: 0;
+      }
+
+      .stage {
+        min-height: 56vh;
+      }
+
+      .crew-actions,
+      .composer {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 560px) {
+      .top-actions .icon-btn {
+        display: none;
+      }
+
+      .view-switch {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .view-tab {
+        padding: 0 12px;
+      }
+
+      .room-band {
+        height: auto;
+        min-height: 48px;
+        flex-wrap: wrap;
+        padding: 8px 10px;
+      }
+
+      .room-title {
+        font-size: 21px;
+      }
+
+      .pin-item,
+      .message {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *:before,
+      *:after {
+        animation: none !important;
+        transition: none !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <div class="scan"></div>
+    <div class="sweep"></div>
+
+    <header class="topbar">
+      <div class="brand">
+        <span class="logo" aria-hidden="true">
+          <span class="px w"></span><span class="px"></span><span class="px"></span><span class="px"></span><span class="px"></span><span class="px"></span><span class="px w"></span>
+          <span class="px w"></span><span class="px w"></span><span class="px"></span><span class="px"></span><span class="px"></span><span class="px w"></span><span class="px w"></span>
+          <span class="px w"></span><span class="px g"></span><span class="px w"></span><span class="px"></span><span class="px w"></span><span class="px g"></span><span class="px w"></span>
+          <span class="px w"></span><span class="px"></span><span class="px g"></span><span class="px w"></span><span class="px g"></span><span class="px"></span><span class="px w"></span>
+          <span class="px w"></span><span class="px"></span><span class="px"></span><span class="px"></span><span class="px"></span><span class="px"></span><span class="px w"></span>
+        </span>
+        <span class="brand-name">merging</span>
+        <span class="live-dot"></span>
+      </div>
+
+      <nav class="view-switch" aria-label="prototype views">
+        <button class="view-tab active" type="button" data-view="hall">大厅 <small>LOBBY</small></button>
+        <button class="view-tab" type="button" data-view="live">直播页 <small>LIVE ROOM</small></button>
+      </nav>
+
+      <div class="top-actions">
+        <button class="icon-btn" type="button">●</button>
+        <button class="go-live" type="button">开播 GO LIVE</button>
+        <button class="avatar-btn" type="button"><span class="avatar doudou-top"></span>兜兜</button>
+      </div>
+    </header>
+
+    <section class="view active" id="view-hall">
+      <div class="hall">
+        <aside class="left-rail">
+          <section class="rail-panel">
+            <div class="rail-inner">
+              <h1>本周活动日历</h1>
+              <div class="seg"><button class="active" type="button">列表</button><button type="button">本周</button><button type="button">历史</button></div>
+              <div class="event-row">
+                <span class="date-chip">周五 21:00</span>
+                <span class="event-thumb"></span>
+                <div class="event-main"><strong>AI侦探游戏项目复盘</strong><span>创作者首次分享下整个项目过程</span></div>
+                <div class="event-meta">2 预约<br />VIEW</div>
+              </div>
+            </div>
+          </section>
+
+          <section class="forest">
+            <div class="rail-inner">
+              <div class="kicker">FOREST BOARD</div>
+              <h2>Merging 森友会</h2>
+              <div class="friend-grid">
+                <div class="friend"><span class="avatar frog"></span><strong>大叉</strong><span>创造是目的</span></div>
+                <div class="friend"><span class="avatar han"></span><strong>鹤仔</strong><span>云端 coding</span></div>
+                <div class="friend"><span class="avatar doudou"></span><strong>兜兜</strong><span>官方小老妹</span></div>
+                <div class="friend"><span class="avatar danniu"></span><strong>蛋妞</strong><span>RTC 测试中</span></div>
+              </div>
+            </div>
+          </section>
+        </aside>
+
+        <section class="hall-main">
+          <div class="chips">
+            <button class="chip active" type="button"><i style="--c:#78aaff"></i>ALL 全部 2</button>
+            <button class="chip" type="button"><i style="--c:#78aaff"></i>自习室 0</button>
+            <button class="chip" type="button"><i style="--c:#7fffb5"></i>从零开始 0</button>
+            <button class="chip" type="button"><i style="--c:#ffb547"></i>求大神指点 0</button>
+            <button class="chip" type="button"><i style="--c:#c8ff5d"></i>求反馈 0</button>
+          </div>
+
+          <div class="room-grid">
+            <article class="room-card" role="button" tabindex="0" data-open-room="lexispace" aria-label="进入 Lexispace 猜词游戏直播间">
+              <div class="room-band"><strong>疯狂迭代</strong><span>LIVE 36:19</span></div>
+              <div class="room-screen"></div>
+              <div class="room-body">
+                <h2 class="room-title">Lexispace 猜词游戏</h2>
+                <div class="host-row"><div class="host"><span class="avatar han"></span>@鹤仔</div><span class="solo">SOLO</span></div>
+              </div>
+            </article>
+
+            <article class="room-card" role="button" tabindex="0" data-open-room="cli" aria-label="进入 写cli-听nujabes有多爽 直播间">
+              <div class="room-band"><strong>疯狂迭代</strong><span>LIVE 33:19</span></div>
+              <div class="room-screen" style="background: radial-gradient(circle at 46% 46%, #7fffb53b, transparent 13%), radial-gradient(circle at 58% 48%, #b589ff46, transparent 12%), #030407;"></div>
+              <div class="room-body">
+                <h2 class="room-title">写cli-听nujabes有多爽</h2>
+                <div class="host-row"><div class="host"><span class="avatar doudou"></span>@大岛</div><span class="solo">SOLO</span></div>
+              </div>
+            </article>
+          </div>
+
+          <section class="history-board">
+            <div class="history-head">
+              <div>
+                <div class="kicker">PROJECT NOTES</div>
+                <h2>历史项目留言板</h2>
+              </div>
+              <span class="history-count">不占直播房间区域</span>
+            </div>
+            <div class="notes-row">
+              <article class="note-ticket"><small>Lexispace / 复盘</small><strong>第一轮说明可以更短</strong><span>来自上场直播的观众反馈，已挂到项目页。</span></article>
+              <article class="note-ticket"><small>Vibe CLI / 链接</small><strong>github.com/oshima/vibe-cli</strong><span>评论区地址已沉淀，回放页可复制。</span></article>
+              <article class="note-ticket"><small>Agent Room / 招募</small><strong>需要一个会做 demo 视频的人</strong><span>异步留言继续收集，不影响当前直播。</span></article>
+            </div>
+          </section>
+        </section>
+      </div>
+    </section>
+
+    <section class="view" id="view-live">
+      <div class="live">
+        <main class="stage-area">
+          <header class="stream-head">
+            <div class="profile">
+              <span class="avatar han-profile"></span>
+              <strong>HanZephyr</strong>
+              <button class="follow" type="button">✓ FOLLOWING</button>
+            </div>
+            <div class="stream-title">
+              <h1>HanZephyr <span class="status-pill">求反馈</span></h1>
+            </div>
+            <button class="icon-btn" type="button">↗</button>
+          </header>
+
+          <section class="stage">
+            <div class="stage-badges"><span class="badge live-red">● LIVE</span><span class="badge">⚡ RTC</span></div>
+            <div class="stage-name"><span>兜兜</span><span>主任</span></div>
+            <div class="stage-avatar"></div>
+          </section>
+        </main>
+
+        <aside class="side">
+          <section class="crew-card">
+            <div class="crew-title"><i></i>CREW</div>
+            <div class="mic-row"><span>ON MIC 3</span><span class="speaking">兜兜 speaking</span></div>
+            <div class="crew-avatars">
+              <div class="crew-person"><span class="avatar han"></span><span>HanZephyr</span></div>
+              <div class="crew-person is-speaking"><span class="avatar doudou"></span><span>兜兜</span></div>
+              <div class="crew-person"><span class="avatar danniu"></span><span>蛋妞</span></div>
+            </div>
+            <div class="crew-actions">
+              <button type="button">🎙</button>
+              <button class="share" type="button">SHARE SCREEN</button>
+              <button type="button">MORE</button>
+              <button class="leave" type="button">← LEAVE</button>
+            </div>
+          </section>
+
+          <section class="chat-card">
+            <div class="chat-tabs"><button class="active" type="button">Chat</button><button type="button">Online (5)</button></div>
+            <div class="chat-head">
+              <div class="chat-title">◇ 聊天</div>
+              <button class="pin-toggle" type="button" id="pinToggle" aria-expanded="true">PINNED 2</button>
+            </div>
+
+            <div class="pin-tray" id="pinTray"></div>
+
+            <div class="messages">
+              <div class="message pinned"><time>23:53</time><span><strong>沉默的喜牛牛</strong>：这个感觉做成skill，让ai去推比较方便</span><button class="message-pin" type="button" data-pin>已 pin</button></div>
+              <div class="message pinned"><time>00:05</time><span><strong>派trick</strong>：现在没有分享屏幕吗</span><button class="message-pin" type="button" data-pin>已 pin</button></div>
+              <div class="message"><time>00:15</time><span><strong>沉默的喜牛牛</strong>：有投屏吗</span><button class="message-pin" type="button" data-pin>pin</button></div>
+              <div class="history-sep">以上为历史消息</div>
+              <div class="message"><time>00:17</time><span><strong>兜兜</strong>：不是</span><button class="message-pin" type="button" data-pin>pin</button></div>
+              <div class="message"><time>00:18</time><span><strong>兜兜</strong>：我咋听不见蛋妞说话</span><button class="message-pin" type="button" data-pin>pin</button></div>
+              <div class="message"><time>00:18</time><span><strong>蛋妞</strong>：我能听见</span><button class="message-pin" type="button" data-pin>pin</button></div>
+              <div class="message"><time>00:18</time><span><strong>蛋妞</strong>：兜兜</span><button class="message-pin" type="button" data-pin>pin</button></div>
+              <div class="message"><time>00:18</time><span><strong>蛋妞</strong>：主任</span><button class="message-pin" type="button" data-pin>pin</button></div>
+            </div>
+
+            <div class="composer">
+              <input placeholder="说点什么..." />
+              <button type="button">☺</button>
+              <button class="send" type="button">发送</button>
+            </div>
+          </section>
+        </aside>
+      </div>
+    </section>
+
+    <div class="toast" id="toast"></div>
+  </main>
+
+  <script>
+    const tabs = Array.from(document.querySelectorAll(".view-tab"));
+    const views = {
+      hall: document.getElementById("view-hall"),
+      live: document.getElementById("view-live")
+    };
+    const toast = document.getElementById("toast");
+    const pinTray = document.getElementById("pinTray");
+    const pinToggle = document.getElementById("pinToggle");
+
+    function showToast(text) {
+      toast.textContent = text;
+      toast.classList.add("show");
+      clearTimeout(showToast.timer);
+      showToast.timer = setTimeout(() => toast.classList.remove("show"), 1800);
+    }
+
+    function switchView(name) {
+      tabs.forEach(item => item.classList.toggle("active", item.dataset.view === name));
+      Object.entries(views).forEach(([viewName, view]) => view.classList.toggle("active", viewName === name));
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    tabs.forEach(tab => {
+      tab.addEventListener("click", () => switchView(tab.dataset.view));
+    });
+
+    document.querySelectorAll("[data-open-room]").forEach(card => {
+      card.addEventListener("click", () => switchView("live"));
+      card.addEventListener("keydown", event => {
+        if (event.key !== "Enter" && event.key !== " ") return;
+        event.preventDefault();
+        switchView("live");
+      });
+    });
+
+    function readMessage(message) {
+      const line = message.querySelector("span").cloneNode(true);
+      const author = line.querySelector("strong")?.textContent || "";
+      line.querySelector("strong")?.remove();
+      return {
+        id: message.dataset.pinId,
+        meta: `${author} · ${message.querySelector("time").textContent}`,
+        text: line.textContent.replace(/^：/, "").trim()
+      };
+    }
+
+    function createPinItem({ id, meta, text }) {
+      const item = document.createElement("div");
+      const body = document.createElement("div");
+      const small = document.createElement("small");
+      const paragraph = document.createElement("p");
+      const copy = document.createElement("button");
+
+      item.className = "pin-item";
+      item.dataset.pinId = id;
+      small.textContent = meta;
+      paragraph.textContent = text;
+      copy.type = "button";
+      copy.dataset.copy = "";
+      copy.textContent = "复制";
+
+      body.append(small, paragraph);
+      item.append(body, copy);
+      return item;
+    }
+
+    function updatePinTray() {
+      const pinned = Array.from(document.querySelectorAll(".message.pinned")).map(readMessage);
+      pinTray.replaceChildren(...pinned.map(createPinItem));
+      pinToggle.textContent = `PINNED ${pinned.length}`;
+      pinToggle.classList.toggle("has-items", pinned.length > 0);
+      pinToggle.setAttribute("aria-expanded", String(!pinTray.hidden));
+      if (!pinned.length) {
+        pinTray.hidden = true;
+        pinToggle.setAttribute("aria-expanded", "false");
+      }
+    }
+
+    async function copyText(text) {
+      if (navigator.clipboard?.writeText) {
+        try {
+          await navigator.clipboard.writeText(text);
+          return true;
+        } catch (error) {
+          // Local file previews may deny async clipboard, so keep a simple fallback.
+        }
+      }
+
+      const temp = document.createElement("textarea");
+      temp.value = text;
+      temp.setAttribute("readonly", "");
+      temp.style.position = "fixed";
+      temp.style.opacity = "0";
+      document.body.appendChild(temp);
+      temp.select();
+      const copied = document.execCommand("copy");
+      temp.remove();
+      return copied;
+    }
+
+    document.querySelectorAll(".message").forEach((message, index) => {
+      message.dataset.pinId = `message-${index}`;
+    });
+
+    pinToggle.addEventListener("click", () => {
+      pinTray.hidden = !pinTray.hidden;
+      pinToggle.setAttribute("aria-expanded", String(!pinTray.hidden));
+    });
+
+    pinTray.addEventListener("click", async event => {
+      const button = event.target.closest("[data-copy]");
+      if (!button) return;
+
+      const text = button.closest(".pin-item").querySelector("p").textContent;
+      const copied = await copyText(text);
+      showToast(copied ? "已复制 pinned 内容" : "复制失败，请手动选择文本");
+    });
+
+    document.querySelectorAll("[data-pin]").forEach(button => {
+      button.addEventListener("click", () => {
+        const message = button.closest(".message");
+        const isPinned = message.classList.toggle("pinned");
+        button.textContent = isPinned ? "已 pin" : "pin";
+        if (isPinned) {
+          pinTray.hidden = false;
+          pinToggle.setAttribute("aria-expanded", "true");
+        }
+        updatePinTray();
+        showToast(isPinned ? "已 pin 到评论区顶部" : "已取消 pin");
+      });
+    });
+
+    updatePinTray();
+  </script>
+</body>
+</html>
