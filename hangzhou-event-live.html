@@ -4264,6 +4264,192 @@
       transform: translateY(-1px) rotate(-.5deg);
     }
 
+    .timer-console {
+      display: grid;
+      gap: 12px;
+      padding: 16px;
+      border: 2px dashed rgba(255, 244, 220, .52);
+      border-radius: 24px 18px 28px 20px / 18px 28px 17px 24px;
+      background: rgba(0, 0, 0, .16);
+      box-shadow: inset 0 0 26px rgba(0, 0, 0, .16);
+      transform: rotate(-.35deg);
+    }
+
+    .timer-console.is-running {
+      border-color: rgba(166, 220, 117, .72);
+      background: rgba(166, 220, 117, .08);
+    }
+
+    .timer-console.is-warning {
+      border-color: rgba(255, 215, 106, .88);
+      background: rgba(255, 215, 106, .1);
+    }
+
+    .timer-console.is-over {
+      border-color: rgba(255, 139, 161, .9);
+      background: rgba(255, 139, 161, .12);
+    }
+
+    .timer-readout {
+      display: grid;
+      gap: 6px;
+    }
+
+    .timer-readout span,
+    .timer-readout em {
+      color: var(--chalk-dim);
+      font-family: var(--mono);
+      font-size: 11px;
+      font-style: normal;
+      font-weight: 900;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+    }
+
+    .timer-readout strong {
+      color: var(--chalk-yellow);
+      font-family: var(--mono);
+      font-size: clamp(42px, 4.2vw, 62px);
+      font-weight: 950;
+      line-height: .96;
+      text-shadow:
+        1px 1px 0 rgba(255, 244, 220, .3),
+        4px 5px 0 rgba(0, 0, 0, .22);
+    }
+
+    .timer-console.is-over .timer-readout strong {
+      color: var(--chalk-pink);
+    }
+
+    .timer-progress {
+      height: 10px;
+      overflow: hidden;
+      border: 2px dashed rgba(255, 244, 220, .4);
+      border-radius: 999px;
+      background: rgba(0, 0, 0, .2);
+    }
+
+    .timer-progress i {
+      display: block;
+      width: 0%;
+      height: 100%;
+      border-radius: 999px;
+      background: var(--chalk-green);
+      transition: width 260ms ease, background 260ms ease;
+    }
+
+    .timer-console.is-warning .timer-progress i {
+      background: var(--chalk-yellow);
+    }
+
+    .timer-console.is-over .timer-progress i {
+      background: var(--chalk-pink);
+    }
+
+    .timer-presets,
+    .timer-controls {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .timer-controls {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .timer-preset {
+      min-height: 44px;
+      padding: 6px 8px;
+      border: 2px dashed rgba(255, 244, 220, .42);
+      border-radius: 18px 12px 20px 14px / 14px 21px 12px 18px;
+      color: var(--chalk);
+      background: rgba(255, 244, 220, .055);
+      font-family: var(--sans);
+      font-size: 13px;
+      font-weight: 950;
+      cursor: pointer;
+    }
+
+    .timer-preset.active {
+      color: #16231e;
+      border-color: rgba(22, 35, 30, .36);
+      background: var(--chalk-blue);
+      box-shadow: 0 4px 0 rgba(0, 0, 0, .2);
+    }
+
+    .timer-controls .btn,
+    .timer-controls .ghost-btn,
+    .timer-controls .danger-btn {
+      width: 100%;
+      min-height: 38px;
+      padding: 0 8px;
+      font-size: 13px;
+    }
+
+    .stage-timer-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      min-height: 40px;
+      padding: 0 14px;
+      border: 2px dashed rgba(255, 244, 220, .58);
+      border-radius: 999px;
+      color: var(--chalk-yellow);
+      background: rgba(0, 0, 0, .16);
+      box-shadow: 0 4px 0 rgba(0, 0, 0, .2);
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 950;
+      letter-spacing: .1em;
+    }
+
+    .stage-timer-pill strong {
+      color: inherit;
+      font-size: 18px;
+      line-height: 1;
+    }
+
+    .stage-timer-pill.is-running {
+      color: var(--chalk-green);
+      border-color: rgba(166, 220, 117, .7);
+    }
+
+    .stage-timer-pill.is-warning {
+      color: var(--chalk-yellow);
+      border-color: rgba(255, 215, 106, .9);
+    }
+
+    .stage-timer-pill.is-over {
+      color: var(--chalk-pink);
+      border-color: rgba(255, 139, 161, .9);
+    }
+
+    .stage-timer-card .stage-timer-time {
+      font-family: var(--mono);
+      font-size: clamp(42px, 4.4vw, 70px);
+      line-height: .94;
+    }
+
+    .stage-timer-card.is-warning {
+      border-color: rgba(255, 215, 106, .88);
+    }
+
+    .stage-timer-card.is-over {
+      border-color: rgba(255, 139, 161, .92);
+      background: rgba(255, 139, 161, .12);
+    }
+
+    .stage-timer-card.is-over .stage-timer-time {
+      color: var(--chalk-pink);
+    }
+
+    .stage-demo-kpis b {
+      color: var(--chalk-yellow);
+      font-family: var(--mono);
+      font-size: clamp(22px, 2.2vw, 34px);
+      line-height: 1;
+    }
+
     .stage-side::before {
       content: "";
       position: absolute;
@@ -4839,6 +5025,7 @@
       }
 
       .stage-back,
+      .stage-timer-pill,
       .live-pill {
         min-height: 38px;
       }
@@ -4867,7 +5054,8 @@
         justify-content: space-between;
       }
 
-      .stage-back {
+      .stage-back,
+      .stage-timer-pill {
         flex: 1;
       }
 
@@ -5052,6 +5240,14 @@
             </div>
           </section>
 
+          <section class="panel timer-panel">
+            <div class="panel-head">
+              <h2 class="panel-title">计时器</h2>
+              <span class="mini mono" id="timerStatusLabel">READY</span>
+            </div>
+            <div class="panel-body" id="timerPanel"></div>
+          </section>
+
           <section class="panel">
             <div class="panel-head">
               <h2 class="panel-title">PPT 管理</h2>
@@ -5137,6 +5333,12 @@
       { id: "closing", label: "结束", code: "CLOSE", hint: "收尾和合影" }
     ];
     const DEFAULT_STAGE_MODE = "standby";
+    const TIMER_PRESETS = [
+      { id: "talk", label: "正式展示", durationSec: 3 * 60, stageMode: "talk" },
+      { id: "demoFlash", label: "项目快闪", durationSec: 2 * 60, stageMode: "demoFlash" },
+      { id: "buffer", label: "换人缓冲", durationSec: 30, stageMode: "caller" }
+    ];
+    const DEFAULT_TIMER_PRESET_ID = "talk";
 
     const DEFAULT_DATA = {
       meta: {
@@ -5250,7 +5452,9 @@
       syncStatus: document.getElementById("syncStatus"),
       syncDataButton: document.getElementById("syncDataButton"),
       stageModeControls: document.getElementById("stageModeControls"),
-      stageModeLabel: document.getElementById("stageModeLabel")
+      stageModeLabel: document.getElementById("stageModeLabel"),
+      timerPanel: document.getElementById("timerPanel"),
+      timerStatusLabel: document.getElementById("timerStatusLabel")
     };
 
     function loadEventData() {
@@ -5300,6 +5504,7 @@
         demoFlashParticipantId: null,
         demoFlashCompletedIds: [],
         demoFlashSkippedIds: [],
+        timer: defaultTimerState(),
         loadedPptNames: [],
         updatedAt: null
       };
@@ -5367,9 +5572,49 @@
         demoFlashParticipantId,
         demoFlashCompletedIds: cleanIdList(safe.demoFlashCompletedIds),
         demoFlashSkippedIds: cleanIdList(safe.demoFlashSkippedIds),
+        timer: normalizeTimerState(safe.timer),
         loadedPptNames,
         updatedAt: safe.updatedAt || null
       };
+    }
+
+    function defaultTimerState(presetId = DEFAULT_TIMER_PRESET_ID) {
+      const preset = timerPreset(presetId);
+      return {
+        presetId: preset.id,
+        label: preset.label,
+        durationSec: preset.durationSec,
+        status: "idle",
+        startedAt: null,
+        pausedElapsedSec: 0
+      };
+    }
+
+    function normalizeTimerState(value) {
+      const safe = value && typeof value === "object" ? value : {};
+      const preset = timerPreset(safe.presetId);
+      const durationSec = positiveNumber(safe.durationSec, preset.durationSec);
+      const pausedElapsedSec = Math.max(0, positiveNumber(safe.pausedElapsedSec, 0));
+      const status = ["idle", "running", "paused"].includes(safe.status) ? safe.status : "idle";
+      const startedAt = status === "running" && validDateString(safe.startedAt) ? safe.startedAt : null;
+      return {
+        presetId: preset.id,
+        label: stringOr(safe.label, preset.label),
+        durationSec,
+        status: startedAt ? "running" : status === "running" ? "idle" : status,
+        startedAt,
+        pausedElapsedSec
+      };
+    }
+
+    function positiveNumber(value, fallback) {
+      const number = Number(value);
+      return Number.isFinite(number) && number > 0 ? number : fallback;
+    }
+
+    function validDateString(value) {
+      if (!value) return false;
+      return !Number.isNaN(new Date(value).getTime());
     }
 
     function normalizeKeywords(value) {
@@ -5473,6 +5718,7 @@
       renderRoute();
       renderStats();
       renderStageModeControls();
+      renderTimerPanel();
       renderRoster();
       renderCurrentPlayer();
       renderDrawReveal();
@@ -5532,6 +5778,120 @@
 
     function currentStageMode() {
       return STAGE_MODES.find(mode => mode.id === state.stageMode) || STAGE_MODES.find(mode => mode.id === DEFAULT_STAGE_MODE);
+    }
+
+    function timerPreset(presetId) {
+      return TIMER_PRESETS.find(preset => preset.id === presetId) || TIMER_PRESETS[0];
+    }
+
+    function currentTimerSnapshot(now = Date.now()) {
+      const timer = normalizeTimerState(state.timer);
+      const startedAtMs = timer.startedAt ? new Date(timer.startedAt).getTime() : 0;
+      const liveElapsedSec = timer.status === "running" && startedAtMs
+        ? Math.max(0, Math.floor((now - startedAtMs) / 1000))
+        : 0;
+      const elapsedSec = Math.max(0, Math.floor(timer.pausedElapsedSec + liveElapsedSec));
+      const remainingSec = Math.floor(timer.durationSec - elapsedSec);
+      const overTimeSec = Math.max(0, -remainingSec);
+      const isOver = elapsedSec > 0 && remainingSec <= 0;
+      const isWarning = timer.status === "running" && remainingSec > 0 && remainingSec <= 30;
+      const stateClass = isOver ? "is-over" : timer.status === "running" ? "is-running" : timer.status === "paused" ? "is-paused" : "is-idle";
+      const className = [stateClass, isWarning ? "is-warning" : ""].filter(Boolean).join(" ");
+      const progress = Math.min(100, Math.max(0, Math.round((elapsedSec / timer.durationSec) * 100)));
+      return {
+        ...timer,
+        elapsedSec,
+        remainingSec,
+        overTimeSec,
+        progress,
+        className,
+        display: isOver ? `+${formatTimerDuration(overTimeSec)}` : formatTimerDuration(Math.max(0, remainingSec)),
+        code: isOver ? "OVER" : timer.status === "running" ? "LIVE" : timer.status === "paused" ? "PAUSED" : "READY",
+        statusText: isOver ? "已超时" : timer.status === "running" ? "计时中" : timer.status === "paused" ? "已暂停" : "待开始"
+      };
+    }
+
+    function renderTimerPanel() {
+      if (!els.timerPanel || !els.timerStatusLabel) return;
+      const snapshot = currentTimerSnapshot();
+      els.timerStatusLabel.textContent = snapshot.code;
+      els.timerPanel.innerHTML = `
+        <div class="timer-console ${snapshot.className}" data-timer-shell>
+          <div class="timer-readout">
+            <span data-timer-label>${escapeHTML(snapshot.label)}</span>
+            <strong data-timer-display>${escapeHTML(snapshot.display)}</strong>
+            <em data-timer-status>${escapeHTML(snapshot.statusText)}</em>
+          </div>
+          <div class="timer-progress" aria-hidden="true">
+            <i data-timer-progress style="width: ${snapshot.progress}%"></i>
+          </div>
+          <div class="timer-presets" aria-label="计时预设">
+            ${TIMER_PRESETS.map(preset => `
+              <button class="timer-preset ${preset.id === snapshot.presetId ? "active" : ""}" type="button" data-timer-preset="${escapeAttr(preset.id)}">
+                ${escapeHTML(preset.label)} ${escapeHTML(formatTimerDuration(preset.durationSec))}
+              </button>
+            `).join("")}
+          </div>
+          <div class="timer-controls" aria-label="计时控制">
+            <button class="${snapshot.status === "running" ? "ghost-btn" : "btn"}" type="button" data-action="${snapshot.status === "running" ? "timer-pause" : "timer-start"}">
+              ${snapshot.status === "paused" ? "继续" : snapshot.status === "running" ? "暂停" : "开始"}
+            </button>
+            <button class="ghost-btn" type="button" data-action="timer-reset">重置</button>
+            <button class="ghost-btn" type="button" data-action="timer-add-30">+30s</button>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderStageTimerPill() {
+      const snapshot = currentTimerSnapshot();
+      if (snapshot.status === "idle") return "";
+      return `
+        <span class="stage-timer-pill ${snapshot.className}" data-timer-shell>
+          <span data-timer-label>${escapeHTML(snapshot.label)}</span>
+          <strong data-timer-display>${escapeHTML(snapshot.display)}</strong>
+        </span>
+      `;
+    }
+
+    function renderStageTimerInfo() {
+      const snapshot = currentTimerSnapshot();
+      return `
+        <div class="stage-info stage-timer-card ${snapshot.className}" data-timer-shell>
+          <div class="stage-info-label">TIMER</div>
+          <strong class="stage-timer-time" data-timer-display>${escapeHTML(snapshot.display)}</strong>
+          <p><span data-timer-label>${escapeHTML(snapshot.label)}</span> · <span data-timer-status>${escapeHTML(snapshot.statusText)}</span></p>
+        </div>
+      `;
+    }
+
+    function updateTimerDisplays() {
+      const snapshot = currentTimerSnapshot();
+      const timerClasses = ["is-idle", "is-running", "is-paused", "is-warning", "is-over"];
+      document.querySelectorAll("[data-timer-shell]").forEach(element => {
+        element.classList.remove(...timerClasses);
+        snapshot.className.split(" ").filter(Boolean).forEach(className => element.classList.add(className));
+      });
+      document.querySelectorAll("[data-timer-display]").forEach(element => {
+        element.textContent = snapshot.display;
+      });
+      document.querySelectorAll("[data-timer-label]").forEach(element => {
+        element.textContent = snapshot.label;
+      });
+      document.querySelectorAll("[data-timer-status]").forEach(element => {
+        element.textContent = snapshot.statusText;
+      });
+      document.querySelectorAll("[data-timer-progress]").forEach(element => {
+        element.style.width = `${snapshot.progress}%`;
+      });
+      if (els.timerStatusLabel) els.timerStatusLabel.textContent = snapshot.code;
+    }
+
+    function formatTimerDuration(totalSeconds) {
+      const seconds = Math.max(0, Math.floor(Number(totalSeconds) || 0));
+      const minutes = Math.floor(seconds / 60);
+      const rest = seconds % 60;
+      return `${minutes}:${String(rest).padStart(2, "0")}`;
     }
 
     function renderSyncStatus() {
@@ -6116,11 +6476,7 @@
       `;
       const side = `
         <aside class="stage-side">
-          <div class="stage-info stage-timer-card">
-            <div class="stage-info-label">TIMER</div>
-            <strong>05:00</strong>
-            <p>展示中。后续可接入真实计时器。</p>
-          </div>
+          ${renderStageTimerInfo()}
           ${renderPptInfo(topic, ppt)}
           ${renderCompanion("assets/penguin-podium.png")}
         </aside>
@@ -6143,6 +6499,7 @@
       `;
       const side = `
         <aside class="stage-side">
+          ${current ? renderStageTimerInfo() : ""}
           <div class="stage-info">
             <div class="stage-info-label">FLASH POOL</div>
             <strong>${remaining.length}/${pool.length}</strong>
@@ -6165,7 +6522,7 @@
             <p>${escapeHTML(demoDescription(participant))}</p>
           </div>
           <div class="stage-demo-kpis">
-            <span><small>MODE</small>02:30</span>
+            <span><small>TIME</small><b data-timer-display>${escapeHTML(currentTimerSnapshot().display)}</b></span>
             <span><small>TYPE</small>${escapeHTML(participant.role)}</span>
             <span><small>JOIN</small>${escapeHTML(participant.presence)}</span>
           </div>
@@ -6224,6 +6581,7 @@
             </div>
             <div class="stage-actions">
               <button class="stage-back" type="button" data-view="control">返回控制台</button>
+              ${renderStageTimerPill()}
               <span class="live-pill"><span class="pulse"></span>${escapeHTML(status)}</span>
             </div>
           </div>
@@ -6844,6 +7202,79 @@
       showToast(`投屏模式：${currentStageMode().label}`);
     }
 
+    function setTimerPreset(presetId) {
+      const preset = timerPreset(presetId);
+      state.timer = defaultTimerState(preset.id);
+      saveEventState();
+      render();
+      showToast(`计时器：${preset.label} ${formatTimerDuration(preset.durationSec)}`);
+    }
+
+    function startTimer() {
+      const snapshot = currentTimerSnapshot();
+      const preset = timerPreset(snapshot.presetId);
+      state.timer = {
+        presetId: snapshot.presetId,
+        label: snapshot.label,
+        durationSec: snapshot.durationSec,
+        status: "running",
+        startedAt: new Date().toISOString(),
+        pausedElapsedSec: snapshot.elapsedSec
+      };
+      if (preset.stageMode && STAGE_MODES.some(mode => mode.id === preset.stageMode)) {
+        state.stageMode = preset.stageMode;
+      }
+      saveEventState();
+      render();
+      showToast(`开始计时：${snapshot.label}`);
+    }
+
+    function pauseTimer() {
+      const snapshot = currentTimerSnapshot();
+      state.timer = {
+        presetId: snapshot.presetId,
+        label: snapshot.label,
+        durationSec: snapshot.durationSec,
+        status: "paused",
+        startedAt: null,
+        pausedElapsedSec: snapshot.elapsedSec
+      };
+      saveEventState();
+      render();
+      showToast("计时已暂停。");
+    }
+
+    function resetTimer() {
+      const snapshot = currentTimerSnapshot();
+      state.timer = {
+        presetId: snapshot.presetId,
+        label: snapshot.label,
+        durationSec: snapshot.durationSec,
+        status: "idle",
+        startedAt: null,
+        pausedElapsedSec: 0
+      };
+      saveEventState();
+      render();
+      showToast("计时已重置。");
+    }
+
+    function addTimerSeconds(seconds) {
+      const snapshot = currentTimerSnapshot();
+      const nextDurationSec = Math.max(30, snapshot.durationSec + seconds);
+      state.timer = {
+        presetId: snapshot.presetId,
+        label: snapshot.label,
+        durationSec: nextDurationSec,
+        status: snapshot.status,
+        startedAt: snapshot.status === "running" ? snapshot.startedAt : null,
+        pausedElapsedSec: snapshot.status === "running" ? snapshot.pausedElapsedSec : snapshot.elapsedSec
+      };
+      saveEventState();
+      render();
+      showToast(`计时调整为 ${formatTimerDuration(nextDurationSec)}。`);
+    }
+
     function selectParticipant(participantId) {
       state.currentParticipantId = participantId;
       if (pendingDrawParticipantId && pendingDrawParticipantId !== participantId) {
@@ -6930,6 +7361,12 @@
         return;
       }
 
+      const timerPresetButton = event.target.closest("[data-timer-preset]");
+      if (timerPresetButton) {
+        setTimerPreset(timerPresetButton.dataset.timerPreset);
+        return;
+      }
+
       const actionButton = event.target.closest("[data-action]");
       if (!actionButton) return;
       const action = actionButton.dataset.action;
@@ -6948,6 +7385,10 @@
       if (action === "demo-reroll") pickDemoFlashParticipant({ excludeCurrent: true });
       if (action === "demo-complete") completeDemoFlashParticipant();
       if (action === "demo-skip") skipDemoFlashParticipant();
+      if (action === "timer-start") startTimer();
+      if (action === "timer-pause") pauseTimer();
+      if (action === "timer-reset") resetTimer();
+      if (action === "timer-add-30") addTimerSeconds(30);
     });
 
     els.search.addEventListener("input", event => {
@@ -7000,6 +7441,7 @@
 
     render();
     initializeRemoteSync();
+    window.setInterval(updateTimerDisplays, 500);
   </script>
 </body>
 </html>
