@@ -5611,6 +5611,8 @@
     };
     const runtimePptFiles = new Map();
     const sync = "BroadcastChannel" in window ? new BroadcastChannel(SYNC_CHANNEL) : null;
+    let lastSeenDataRaw = readStorage(STORAGE_DATA_KEY) || "";
+    let lastSeenStateRaw = readStorage(STORAGE_STATE_KEY) || "";
 
     const els = {
       roster: document.getElementById("roster"),
@@ -5865,18 +5867,68 @@
     }
 
     function saveEventData() {
-      writeStorage(STORAGE_DATA_KEY, JSON.stringify(eventData));
-      notifySync("data");
+      const payload = JSON.stringify(eventData);
+      lastSeenDataRaw = payload;
+      writeStorage(STORAGE_DATA_KEY, payload);
+      notifySync("data", payload);
     }
 
     function saveEventState() {
       state.updatedAt = new Date().toISOString();
-      writeStorage(STORAGE_STATE_KEY, JSON.stringify(state));
-      notifySync("state");
+      const payload = JSON.stringify(state);
+      lastSeenStateRaw = payload;
+      writeStorage(STORAGE_STATE_KEY, payload);
+      notifySync("state", payload);
     }
 
-    function notifySync(kind) {
-      if (sync) sync.postMessage({ kind, at: Date.now() });
+    function notifySync(kind, payload) {
+      if (sync) sync.postMessage({ kind, payload, at: Date.now() });
+    }
+
+    function applySharedDataPayload(payload) {
+      if (typeof payload === "string") {
+        try {
+          eventData = normalizeEventData(JSON.parse(payload));
+          lastSeenDataRaw = payload;
+          return;
+        } catch (error) {
+          console.warn("Invalid synced data payload", error);
+        }
+      }
+      eventData = loadEventData();
+      lastSeenDataRaw = readStorage(STORAGE_DATA_KEY) || "";
+    }
+
+    function applySharedStatePayload(payload) {
+      if (typeof payload === "string") {
+        try {
+          state = normalizeState(JSON.parse(payload));
+          lastSeenStateRaw = payload;
+          return;
+        } catch (error) {
+          console.warn("Invalid synced state payload", error);
+        }
+      }
+      state = loadEventState();
+      lastSeenStateRaw = readStorage(STORAGE_STATE_KEY) || "";
+    }
+
+    function pollSharedStorage() {
+      const nextDataRaw = readStorage(STORAGE_DATA_KEY) || "";
+      const nextStateRaw = readStorage(STORAGE_STATE_KEY) || "";
+      let changed = false;
+
+      if (nextDataRaw !== lastSeenDataRaw) {
+        applySharedDataPayload(nextDataRaw);
+        changed = true;
+      }
+
+      if (nextStateRaw !== lastSeenStateRaw) {
+        applySharedStatePayload(nextStateRaw);
+        changed = true;
+      }
+
+      if (changed) render();
     }
 
     function selectedParticipant() {
@@ -7955,12 +8007,12 @@
 
     window.addEventListener("storage", event => {
       if (event.key === STORAGE_STATE_KEY) {
-        state = loadEventState();
+        applySharedStatePayload(event.newValue);
         render();
       }
       if (event.key === STORAGE_DATA_KEY) {
-        eventData = loadEventData();
-        state = loadEventState();
+        applySharedDataPayload(event.newValue);
+        applySharedStatePayload(readStorage(STORAGE_STATE_KEY));
         render();
       }
     });
@@ -7968,14 +8020,15 @@
     if (sync) {
       sync.addEventListener("message", event => {
         if (!event.data) return;
-        if (event.data.kind === "data") eventData = loadEventData();
-        if (event.data.kind === "state") state = loadEventState();
+        if (event.data.kind === "data") applySharedDataPayload(event.data.payload);
+        if (event.data.kind === "state") applySharedStatePayload(event.data.payload);
         render();
       });
     }
 
     render();
     initializeRemoteSync();
+    window.setInterval(pollSharedStorage, 1000);
     window.setInterval(updateTimerDisplays, 500);
   </script>
 </body>
