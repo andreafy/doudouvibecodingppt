@@ -4264,6 +4264,153 @@
       transform: translateY(-1px) rotate(-.5deg);
     }
 
+    .run-console {
+      display: grid;
+      gap: 14px;
+      padding: 18px;
+      border: 3px dashed rgba(255, 215, 106, .72);
+      border-radius: 28px 20px 32px 24px / 22px 32px 20px 28px;
+      background:
+        radial-gradient(circle at 14% 18%, rgba(255, 215, 106, .14), transparent 26%),
+        rgba(0, 0, 0, .16);
+      box-shadow: inset 0 0 30px rgba(0, 0, 0, .16);
+      transform: rotate(.25deg);
+    }
+
+    .run-console.is-live {
+      border-color: rgba(166, 220, 117, .76);
+      background:
+        radial-gradient(circle at 16% 18%, rgba(166, 220, 117, .16), transparent 26%),
+        rgba(0, 0, 0, .16);
+    }
+
+    .run-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 14px;
+    }
+
+    .run-eyebrow {
+      color: var(--chalk-blue);
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 950;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+
+    .run-title {
+      display: block;
+      margin-top: 7px;
+      color: var(--chalk-yellow);
+      font-size: clamp(25px, 2.4vw, 38px);
+      line-height: 1.05;
+      font-weight: 950;
+      text-shadow:
+        1px 1px 0 rgba(255, 244, 220, .28),
+        3px 4px 0 rgba(0, 0, 0, .2);
+    }
+
+    .run-meta {
+      flex: none;
+      min-width: 84px;
+      padding: 8px 11px;
+      border: 2px dashed rgba(132, 216, 255, .58);
+      border-radius: 999px;
+      color: var(--chalk-blue);
+      background: rgba(132, 216, 255, .08);
+      font-family: var(--mono);
+      font-size: 12px;
+      font-weight: 950;
+      text-align: center;
+    }
+
+    .run-note {
+      margin: 0;
+      color: var(--chalk-dim);
+      font-size: 16px;
+      font-weight: 850;
+      line-height: 1.42;
+    }
+
+    .run-step-row {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .run-step {
+      min-height: 46px;
+      display: grid;
+      place-items: center;
+      padding: 6px 8px;
+      border: 2px dashed rgba(255, 244, 220, .38);
+      border-radius: 18px 13px 20px 15px / 14px 22px 13px 20px;
+      color: var(--chalk-dim);
+      background: rgba(255, 244, 220, .045);
+      font-size: 13px;
+      font-weight: 950;
+      text-align: center;
+    }
+
+    .run-step.active {
+      color: #16231e;
+      border-color: rgba(22, 35, 30, .38);
+      background: var(--chalk-yellow);
+      box-shadow: 0 4px 0 rgba(0, 0, 0, .18);
+    }
+
+    .run-primary {
+      min-height: 58px;
+      width: 100%;
+      justify-content: center;
+      font-size: clamp(17px, 1.45vw, 22px);
+    }
+
+    .run-actions {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .run-actions .ghost-btn,
+    .run-actions .danger-btn {
+      width: 100%;
+      min-height: 38px;
+      padding: 0 10px;
+      font-size: 13px;
+    }
+
+    .advanced-panel {
+      overflow: hidden;
+    }
+
+    summary.panel-head {
+      cursor: pointer;
+      list-style: none;
+    }
+
+    summary.panel-head::-webkit-details-marker {
+      display: none;
+    }
+
+    .advanced-panel:not([open]) .panel-head {
+      border-bottom: 0;
+    }
+
+    .advanced-panel .panel-title::before {
+      content: ">";
+      display: inline-block;
+      margin-right: 8px;
+      color: var(--chalk-blue);
+      font-size: .82em;
+    }
+
+    .advanced-panel[open] .panel-title::before {
+      transform: rotate(90deg);
+    }
+
     .timer-console {
       display: grid;
       gap: 12px;
@@ -4293,6 +4440,14 @@
     .timer-readout {
       display: grid;
       gap: 6px;
+      width: 100%;
+      padding: 0;
+      border: 0;
+      color: inherit;
+      background: transparent;
+      font: inherit;
+      text-align: left;
+      cursor: pointer;
     }
 
     .timer-readout span,
@@ -5034,6 +5189,11 @@
         grid-template-columns: repeat(2, minmax(0, 1fr));
       }
 
+      .run-step-row,
+      .run-actions {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
       .stage-queue-item {
         grid-template-columns: 44px minmax(0, 1fr);
         border-radius: 22px;
@@ -5052,6 +5212,17 @@
       .stage-actions {
         width: 100%;
         justify-content: space-between;
+      }
+
+      .run-head {
+        display: grid;
+      }
+
+      .run-step-row,
+      .run-actions,
+      .timer-presets,
+      .timer-controls {
+        grid-template-columns: 1fr;
       }
 
       .stage-back,
@@ -5203,6 +5374,14 @@
 
       <section class="workbench">
         <div class="stack">
+          <section class="panel run-panel">
+            <div class="panel-head">
+              <h2 class="panel-title">主持流程</h2>
+              <span class="mini mono" id="runStatusLabel">RUN</span>
+            </div>
+            <div class="panel-body" id="runPanel"></div>
+          </section>
+
           <section class="panel current-panel">
             <img class="board-mascot current-penguin" src="assets/penguin-flow.png" alt="" aria-hidden="true" />
             <div class="panel-head">
@@ -5230,15 +5409,15 @@
         </div>
 
         <div class="stack">
-          <section class="panel stage-mode-panel">
-            <div class="panel-head">
+          <details class="panel stage-mode-panel advanced-panel">
+            <summary class="panel-head">
               <h2 class="panel-title">投屏模式</h2>
               <span class="mini mono" id="stageModeLabel">STANDBY</span>
-            </div>
+            </summary>
             <div class="panel-body">
               <div class="stage-mode-grid" id="stageModeControls" aria-label="投屏模式切换"></div>
             </div>
-          </section>
+          </details>
 
           <section class="panel timer-panel">
             <div class="panel-head">
@@ -5444,6 +5623,7 @@
       currentPlayer: document.getElementById("currentPlayer"),
       drawReveal: document.getElementById("drawReveal"),
       drawLog: document.getElementById("drawLog"),
+      runPanel: document.getElementById("runPanel"),
       demoPanel: document.getElementById("demoPanel"),
       stageView: document.getElementById("stageView"),
       search: document.getElementById("participantSearch"),
@@ -5456,6 +5636,7 @@
       statAudience: document.getElementById("statAudience"),
       statOnline: document.getElementById("statOnline"),
       selectedStatus: document.getElementById("selectedStatus"),
+      runStatusLabel: document.getElementById("runStatusLabel"),
       drawClock: document.getElementById("drawClock"),
       logCount: document.getElementById("logCount"),
       pptLoadedCount: document.getElementById("pptLoadedCount"),
@@ -5517,6 +5698,7 @@
         demoFlashParticipantId: null,
         demoFlashCompletedIds: [],
         demoFlashSkippedIds: [],
+        runCompletedIds: [],
         timer: defaultTimerState(),
         loadedPptNames: [],
         updatedAt: null
@@ -5582,6 +5764,7 @@
         demoFlashParticipantId,
         demoFlashCompletedIds: cleanIdList(safe.demoFlashCompletedIds),
         demoFlashSkippedIds: cleanIdList(safe.demoFlashSkippedIds),
+        runCompletedIds: cleanIdList(safe.runCompletedIds),
         timer: normalizeTimerState(safe.timer),
         loadedPptNames,
         updatedAt: safe.updatedAt || null
@@ -5869,6 +6052,7 @@
       renderRoute();
       renderStats();
       renderStageModeControls();
+      renderRunPanel();
       renderTimerPanel();
       renderRoster();
       renderCurrentPlayer();
@@ -5931,6 +6115,194 @@
       return STAGE_MODES.find(mode => mode.id === state.stageMode) || STAGE_MODES.find(mode => mode.id === DEFAULT_STAGE_MODE);
     }
 
+    function speakerQueue() {
+      return eventData.participants.filter(participant => participant.eligibleForDraw !== false);
+    }
+
+    function runWorkflowSnapshot() {
+      const queue = speakerQueue();
+      const completedSet = new Set(state.runCompletedIds || []);
+      const selected = selectedParticipant();
+      const selectedIndex = selected ? queue.findIndex(participant => participant.id === selected.id) : -1;
+      const selectedInQueue = selectedIndex >= 0;
+      const current = selectedInQueue ? selected : queue.find(participant => !completedSet.has(participant.id)) || queue[0] || null;
+      const currentIndex = current ? queue.findIndex(participant => participant.id === current.id) : -1;
+      const next = current ? nextRunParticipant(current.id, completedSet) : queue[0] || null;
+      const previous = current && currentIndex > 0 ? queue[currentIndex - 1] : null;
+      const draw = current ? getDraw(current.id) : null;
+      const pending = Boolean(current && pendingDrawParticipantId === current.id);
+      const completed = Boolean(current && completedSet.has(current.id));
+      const timer = currentTimerSnapshot();
+      const completedCount = queue.filter(participant => completedSet.has(participant.id)).length;
+
+      if (!queue.length) {
+        return {
+          queue,
+          current: null,
+          next: null,
+          previous: null,
+          completedCount: 0,
+          total: 0,
+          activeStep: "speaker",
+          statusCode: "EMPTY",
+          title: "还没有正式选手",
+          note: "点左侧“选手总数”或同步飞书数据后，主持流程会自动接上。",
+          primaryLabel: "等待选手数据",
+          primaryAction: "",
+          primaryDisabled: true
+        };
+      }
+
+      if (!selectedInQueue) {
+        return {
+          queue,
+          current,
+          next,
+          previous,
+          completedCount,
+          total: queue.length,
+          activeStep: "speaker",
+          statusCode: "READY",
+          title: current ? `准备从 ${current.nickname} 开始` : "准备开始",
+          note: "当前左侧选中的不是正式选手，一键切到正式选手队列。",
+          primaryLabel: "开始第一位",
+          primaryAction: "run-start-first",
+          primaryDisabled: false
+        };
+      }
+
+      if (completed && next) {
+        return {
+          queue,
+          current,
+          next,
+          previous,
+          completedCount,
+          total: queue.length,
+          activeStep: "next",
+          statusCode: "NEXT",
+          title: `${current.nickname} 已完成`,
+          note: `下一位是 ${next.nickname}，点击后直接进入抽题准备。`,
+          primaryLabel: `进入 ${next.nickname}`,
+          primaryAction: "run-next-speaker",
+          primaryDisabled: false
+        };
+      }
+
+      if (completed && !next) {
+        return {
+          queue,
+          current,
+          next,
+          previous,
+          completedCount,
+          total: queue.length,
+          activeStep: "next",
+          statusCode: "DONE",
+          title: "正式选手已完成",
+          note: "可以进入结束页，或者从左侧手动选择某位选手回看。",
+          primaryLabel: "进入结束页",
+          primaryAction: "run-finish-event",
+          primaryDisabled: false
+        };
+      }
+
+      if (!draw) {
+        return {
+          queue,
+          current,
+          next,
+          previous,
+          completedCount,
+          total: queue.length,
+          activeStep: "draw",
+          statusCode: pending ? "CONFIRM" : "DRAW",
+          title: pending ? `确认 ${current.nickname} 的题目` : `为 ${current.nickname} 抽题`,
+          note: pending ? "下一次点击会正式锁定题目和 PPT。" : "点主按钮后大屏进入抽题准备，避免再来回切投屏模式。",
+          primaryLabel: pending ? "确认锁定题目" : `为 ${current.nickname} 抽题`,
+          primaryAction: pending ? "run-confirm-draw" : "run-draw",
+          primaryDisabled: !availableTopics().length
+        };
+      }
+
+      if (timer.status === "idle" && !completed) {
+        return {
+          queue,
+          current,
+          next,
+          previous,
+          completedCount,
+          total: queue.length,
+          activeStep: "talk",
+          statusCode: "TALK",
+          title: `${current.nickname} 准备展示`,
+          note: "点主按钮会切到展示投屏，并启动正式展示 3:00。",
+          primaryLabel: `开始 ${current.nickname} 的 3:00`,
+          primaryAction: "run-start-talk",
+          primaryDisabled: false
+        };
+      }
+
+      return {
+        queue,
+        current,
+        next,
+        previous,
+        completedCount,
+        total: queue.length,
+        activeStep: "next",
+        statusCode: timer.status === "paused" ? "PAUSED" : "LIVE",
+        title: `${current.nickname} 展示中`,
+        note: next ? `完成后将自动进入 ${next.nickname} 的抽题准备。` : "这是最后一位正式选手，完成后可以进入结束页。",
+        primaryLabel: next ? `完成 ${current.nickname}，进入下一位` : `完成 ${current.nickname}，进入结束`,
+        primaryAction: "run-complete-next",
+        primaryDisabled: false
+      };
+    }
+
+    function renderRunPanel() {
+      if (!els.runPanel || !els.runStatusLabel) return;
+      const snapshot = runWorkflowSnapshot();
+      els.runStatusLabel.textContent = snapshot.statusCode;
+      const steps = [
+        { id: "speaker", label: "选手" },
+        { id: "draw", label: "抽题" },
+        { id: "talk", label: "展示" },
+        { id: "next", label: "下一位" }
+      ];
+      els.runPanel.innerHTML = `
+        <div class="run-console ${snapshot.statusCode === "LIVE" ? "is-live" : ""}">
+          <div class="run-head">
+            <div>
+              <span class="run-eyebrow">HOST RUN</span>
+              <strong class="run-title">${escapeHTML(snapshot.title)}</strong>
+            </div>
+            <span class="run-meta">${snapshot.total ? `${Math.max(snapshot.current ? snapshot.queue.findIndex(participant => participant.id === snapshot.current.id) + 1 : 0, 0)}/${snapshot.total}` : "0/0"}</span>
+          </div>
+          <p class="run-note">${escapeHTML(snapshot.note)}</p>
+          <div class="run-step-row" aria-label="主持流程">
+            ${steps.map(step => `<span class="run-step ${step.id === snapshot.activeStep ? "active" : ""}">${escapeHTML(step.label)}</span>`).join("")}
+          </div>
+          <button class="btn run-primary" type="button" data-action="${escapeAttr(snapshot.primaryAction)}" ${snapshot.primaryDisabled ? "disabled" : ""}>
+            ${escapeHTML(snapshot.primaryLabel)}
+          </button>
+          <div class="run-actions">
+            <button class="ghost-btn" type="button" data-action="run-prev-speaker" ${snapshot.previous ? "" : "disabled"}>上一位</button>
+            <button class="ghost-btn" type="button" data-action="run-skip-speaker" ${snapshot.next ? "" : "disabled"}>跳过</button>
+            <button class="ghost-btn" type="button" data-action="open-stage">打开投屏</button>
+          </div>
+        </div>
+      `;
+    }
+
+    function nextRunParticipant(currentId, completedSet = new Set(state.runCompletedIds || [])) {
+      const queue = speakerQueue();
+      if (!queue.length) return null;
+      const currentIndex = Math.max(0, queue.findIndex(participant => participant.id === currentId));
+      const ordered = [...queue.slice(currentIndex + 1), ...queue.slice(0, currentIndex)];
+      return ordered.find(participant => !completedSet.has(participant.id)) || null;
+    }
+
     function timerPreset(presetId) {
       return TIMER_PRESETS.find(preset => preset.id === presetId) || TIMER_PRESETS[0];
     }
@@ -5968,11 +6340,11 @@
       els.timerStatusLabel.textContent = snapshot.code;
       els.timerPanel.innerHTML = `
         <div class="timer-console ${snapshot.className}" data-timer-shell>
-          <div class="timer-readout">
+          <button class="timer-readout" type="button" data-action="timer-toggle" aria-label="${escapeAttr(timerToggleLabel(snapshot))}" title="${escapeAttr(timerToggleLabel(snapshot))}">
             <span data-timer-label>${escapeHTML(snapshot.label)}</span>
             <strong data-timer-display>${escapeHTML(snapshot.display)}</strong>
             <em data-timer-status>${escapeHTML(snapshot.statusText)}</em>
-          </div>
+          </button>
           <div class="timer-progress" aria-hidden="true">
             <i data-timer-progress style="width: ${snapshot.progress}%"></i>
           </div>
@@ -6043,6 +6415,12 @@
       const minutes = Math.floor(seconds / 60);
       const rest = seconds % 60;
       return `${minutes}:${String(rest).padStart(2, "0")}`;
+    }
+
+    function timerToggleLabel(snapshot) {
+      if (snapshot.status === "running") return "暂停计时器";
+      if (snapshot.status === "paused") return "继续计时器";
+      return "开始计时器";
     }
 
     function renderSyncStatus() {
@@ -7376,6 +7754,138 @@
       showToast(`投屏模式：${currentStageMode().label}`);
     }
 
+    function selectRunParticipant(participant, stageMode = "draw") {
+      if (!participant) return false;
+      rosterFilter = "speakers";
+      pendingDrawParticipantId = null;
+      state.currentParticipantId = participant.id;
+      state.stageMode = stageMode;
+      state.timer = defaultTimerState("talk");
+      saveEventState();
+      render();
+      return true;
+    }
+
+    function startFirstRunParticipant() {
+      const snapshot = runWorkflowSnapshot();
+      const participant = snapshot.current || snapshot.queue[0];
+      if (!participant) {
+        showToast("还没有正式选手。");
+        return;
+      }
+      selectRunParticipant(participant, "draw");
+      showToast(`进入正式流程：${participant.nickname}`);
+    }
+
+    function beginRunDraw() {
+      const snapshot = runWorkflowSnapshot();
+      const participant = snapshot.current || snapshot.queue[0];
+      if (!participant) {
+        showToast("还没有正式选手。");
+        return;
+      }
+      if (getDraw(participant.id)) {
+        showToast("该选手已经抽过题。");
+        return;
+      }
+      if (!availableTopics().length) {
+        showToast("没有可用主题。");
+        return;
+      }
+      rosterFilter = "speakers";
+      state.currentParticipantId = participant.id;
+      state.stageMode = "draw";
+      pendingDrawParticipantId = participant.id;
+      saveEventState();
+      render();
+      showToast(`抽题准备：${participant.nickname}`);
+    }
+
+    function confirmRunDraw() {
+      const snapshot = runWorkflowSnapshot();
+      if (snapshot.current && state.currentParticipantId !== snapshot.current.id) {
+        state.currentParticipantId = snapshot.current.id;
+      }
+      if (snapshot.current && pendingDrawParticipantId !== snapshot.current.id) {
+        pendingDrawParticipantId = snapshot.current.id;
+      }
+      confirmDraw();
+    }
+
+    function startRunTalk() {
+      const snapshot = runWorkflowSnapshot();
+      const participant = snapshot.current;
+      if (!participant) {
+        showToast("还没有正式选手。");
+        return;
+      }
+      if (!getDraw(participant.id)) {
+        showToast("先为当前选手抽题。");
+        return;
+      }
+      rosterFilter = "speakers";
+      state.currentParticipantId = participant.id;
+      state.timer = defaultTimerState("talk");
+      startTimer();
+    }
+
+    function completeRunAndAdvance() {
+      const snapshot = runWorkflowSnapshot();
+      const participant = snapshot.current;
+      if (!participant) {
+        showToast("还没有正式选手。");
+        return;
+      }
+      const completedIds = new Set(state.runCompletedIds || []);
+      completedIds.add(participant.id);
+      state.runCompletedIds = uniqueIds(Array.from(completedIds));
+      state.timer = defaultTimerState("talk");
+      pendingDrawParticipantId = null;
+      rosterFilter = "speakers";
+      const next = nextRunParticipant(participant.id, completedIds);
+      if (next) {
+        state.currentParticipantId = next.id;
+        state.stageMode = "draw";
+        saveEventState();
+        render();
+        showToast(`下一位：${next.nickname}`);
+        return;
+      }
+      state.stageMode = "closing";
+      saveEventState();
+      render();
+      showToast("正式选手流程完成。");
+    }
+
+    function moveRunParticipant(direction) {
+      const queue = speakerQueue();
+      if (!queue.length) {
+        showToast("还没有正式选手。");
+        return;
+      }
+      const selected = selectedParticipant();
+      const currentIndex = selected ? queue.findIndex(participant => participant.id === selected.id) : -1;
+      const nextIndex = currentIndex < 0
+        ? 0
+        : Math.min(queue.length - 1, Math.max(0, currentIndex + direction));
+      const next = queue[nextIndex];
+      if (!next || next.id === selected?.id) {
+        showToast(direction < 0 ? "已经是第一位。" : "已经是最后一位。");
+        return;
+      }
+      selectRunParticipant(next, "draw");
+      showToast(`当前选手：${next.nickname}`);
+    }
+
+    function finishRunEvent() {
+      pendingDrawParticipantId = null;
+      state.timer = defaultTimerState("talk");
+      state.stageMode = "closing";
+      saveEventState();
+      render();
+      showToast("投屏模式：结束");
+    }
+
     function setTimerPreset(presetId) {
       const preset = timerPreset(presetId);
       state.timer = defaultTimerState(preset.id);
@@ -7447,6 +7957,15 @@
       saveEventState();
       render();
       showToast(`计时调整为 ${formatTimerDuration(nextDurationSec)}。`);
+    }
+
+    function toggleTimer() {
+      const snapshot = currentTimerSnapshot();
+      if (snapshot.status === "running") {
+        pauseTimer();
+        return;
+      }
+      startTimer();
     }
 
     function selectParticipant(participantId) {
@@ -7559,6 +8078,16 @@
       if (action === "demo-reroll") pickDemoFlashParticipant({ excludeCurrent: true });
       if (action === "demo-complete") completeDemoFlashParticipant();
       if (action === "demo-skip") skipDemoFlashParticipant();
+      if (action === "run-start-first") startFirstRunParticipant();
+      if (action === "run-draw") beginRunDraw();
+      if (action === "run-confirm-draw") confirmRunDraw();
+      if (action === "run-start-talk") startRunTalk();
+      if (action === "run-complete-next") completeRunAndAdvance();
+      if (action === "run-next-speaker") moveRunParticipant(1);
+      if (action === "run-prev-speaker") moveRunParticipant(-1);
+      if (action === "run-skip-speaker") moveRunParticipant(1);
+      if (action === "run-finish-event") finishRunEvent();
+      if (action === "timer-toggle") toggleTimer();
       if (action === "timer-start") startTimer();
       if (action === "timer-pause") pauseTimer();
       if (action === "timer-reset") resetTimer();
