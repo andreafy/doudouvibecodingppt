@@ -4989,21 +4989,33 @@
           title: "给杭州的一次现场协作做一个最小工具",
           summary: "围绕当天真实活动场景，做一个能立刻帮大家减少混乱的小工具。",
           pptNo: "PPT-01",
-          pptFile: "PPT-01-hangzhou-collaboration.pptx"
+          pptFile: "PPT-01-hangzhou-collaboration.pptx",
+          submitterId: "p02",
+          submitterName: "示例选手 B",
+          status: "approved",
+          enabled: true
         },
         {
           id: "t02",
           title: "把报名表变成现场节奏控制台",
           summary: "从表单数据出发，设计一个主持人当天能稳定操作的控制界面。",
           pptNo: "PPT-02",
-          pptFile: "PPT-02-event-control.pptx"
+          pptFile: "PPT-02-event-control.pptx",
+          submitterId: "p01",
+          submitterName: "示例选手 A",
+          status: "approved",
+          enabled: true
         },
         {
           id: "t03",
           title: "为 Lightning Talk 做一个 Demo 展示入口",
           summary: "让随机 Demo 环节更容易打开、投屏、记录和切换。",
           pptNo: "PPT-03",
-          pptFile: "PPT-03-demo-showcase.pptx"
+          pptFile: "PPT-03-demo-showcase.pptx",
+          submitterId: "p03",
+          submitterName: "示例选手 C",
+          status: "approved",
+          enabled: true
         }
       ]
     };
@@ -5092,6 +5104,7 @@
         stageMode: DEFAULT_STAGE_MODE,
         currentParticipantId: null,
         draws: {},
+        drawPlan: [],
         loadedPptNames: [],
         updatedAt: null
       };
@@ -5126,13 +5139,7 @@
             demo: normalizeDemo(participant.demo)
           };
         }),
-        topics: topics.map((topic, index) => ({
-          id: stringOr(topic.id, `t${String(index + 1).padStart(2, "0")}`),
-          title: stringOr(topic.title || topic.name, `主题 ${index + 1}`),
-          summary: stringOr(topic.summary || topic.description, ""),
-          pptNo: stringOr(topic.pptNo || topic.no || topic.code, `PPT-${String(index + 1).padStart(2, "0")}`),
-          pptFile: stringOr(topic.pptFile || topic.file || topic.filename, "")
-        }))
+        topics: topics.map((topic, index) => normalizeTopic(topic, index))
       };
     }
 
@@ -5147,6 +5154,8 @@
           return !record?.topicId || topicIds.has(record.topicId);
         })
       );
+      const usedTopicIds = new Set(Object.values(draws).map(record => record.topicId).filter(Boolean));
+      const drawPlan = normalizeDrawPlan(safe.drawPlan, participantIds, topicIds, usedTopicIds);
       const loadedPptNames = Array.isArray(safe.loadedPptNames) ? safe.loadedPptNames.map(String) : [];
       const currentParticipantId = safe.currentParticipantId || eventData.participants[0]?.id || null;
       const stageMode = STAGE_MODES.some(mode => mode.id === safe.stageMode) ? safe.stageMode : DEFAULT_STAGE_MODE;
@@ -5154,9 +5163,40 @@
         stageMode,
         currentParticipantId,
         draws,
+        drawPlan,
         loadedPptNames,
         updatedAt: safe.updatedAt || null
       };
+    }
+
+    function normalizeTopic(topic, index) {
+      const status = stringOr(topic.status || topic.reviewStatus || topic.state, "approved");
+      return {
+        id: stringOr(topic.id, `t${String(index + 1).padStart(2, "0")}`),
+        title: stringOr(topic.title || topic.name, `主题 ${index + 1}`),
+        summary: stringOr(topic.summary || topic.description, ""),
+        pptNo: stringOr(topic.pptNo || topic.no || topic.code, `PPT-${String(index + 1).padStart(2, "0")}`),
+        pptFile: stringOr(topic.pptFile || topic.file || topic.filename, ""),
+        submitterId: normalizeParticipantRef(topic.submitterId || topic.submitter_id || topic.playerId || topic.player_id || topic.ownerId || topic.owner_id),
+        submitterName: stringOr(topic.submitterName || topic.submitter || topic.playerName || topic.ownerName || topic.nickname, ""),
+        status,
+        enabled: topic.enabled !== false && !/禁用|不展示|取消|disabled|hidden|off/i.test(status)
+      };
+    }
+
+    function normalizeDrawPlan(input, participantIds, topicIds, usedTopicIds) {
+      if (!Array.isArray(input)) return [];
+      const seenParticipants = new Set();
+      const seenTopics = new Set();
+      return input.flatMap(item => {
+        const participantId = normalizeParticipantRef(item && item.participantId);
+        const topicId = stringOr(item && item.topicId, "");
+        if (!participantIds.has(participantId) || !topicIds.has(topicId)) return [];
+        if (usedTopicIds.has(topicId) || seenParticipants.has(participantId) || seenTopics.has(topicId)) return [];
+        seenParticipants.add(participantId);
+        seenTopics.add(topicId);
+        return [{ participantId, topicId }];
+      });
     }
 
     function normalizeKeywords(value) {
@@ -5192,6 +5232,22 @@
         description: stringOr(demo.description || demo.summary, ""),
         url: stringOr(demo.url || demo.link, "")
       };
+    }
+
+    function normalizeParticipantRef(value) {
+      return String(value || "").trim().toLowerCase();
+    }
+
+    function sameParticipantRef(left, right) {
+      const normalizedLeft = normalizeParticipantRef(left);
+      const normalizedRight = normalizeParticipantRef(right);
+      return Boolean(normalizedLeft && normalizedRight && normalizedLeft === normalizedRight);
+    }
+
+    function topicSubmitterLabel(topic) {
+      if (!topic) return "提交者：未填写";
+      const name = topic.submitterName || topic.submitterId;
+      return name ? `提交者：${name}` : "提交者：公共题";
     }
 
     function stringOr(value, fallback) {
@@ -5252,7 +5308,102 @@
 
     function availableTopics() {
       const used = new Set(Object.values(state.draws).map(record => record.topicId));
-      return eventData.topics.filter(topic => !used.has(topic.id));
+      return eventData.topics.filter(topic => topic.enabled !== false && !used.has(topic.id));
+    }
+
+    function availableTopicsForParticipant(participant, topics = availableTopics()) {
+      return topics.filter(topic => canParticipantDrawTopic(participant, topic));
+    }
+
+    function canParticipantDrawTopic(participant, topic) {
+      if (!participant || !topic || topic.enabled === false) return false;
+      return !sameParticipantRef(topic.submitterId, participant.id);
+    }
+
+    function remainingDrawParticipants() {
+      return eventData.participants.filter(participant => participant.eligibleForDraw !== false && !getDraw(participant.id));
+    }
+
+    function plannedTopicForParticipant(participantId) {
+      const normalizedId = normalizeParticipantRef(participantId);
+      const planned = state.drawPlan.find(item => item.participantId === normalizedId);
+      return planned ? getTopic(planned.topicId) : null;
+    }
+
+    function ensureDrawPlanFor(participant) {
+      const remainingParticipants = remainingDrawParticipants();
+      const remainingTopics = availableTopics();
+      if (!remainingParticipants.some(item => sameParticipantRef(item.id, participant.id))) {
+        return { ok: false, message: "该选手不在待抽题队列中。" };
+      }
+      if (remainingTopics.length < remainingParticipants.length) {
+        return { ok: false, message: "可用主题少于剩余选手，无法生成完整抽签表。" };
+      }
+
+      const currentPlan = validDrawPlanFor(remainingParticipants, remainingTopics);
+      if (currentPlan) {
+        state.drawPlan = currentPlan;
+        return { ok: true, topic: plannedTopicForParticipant(participant.id), plan: currentPlan };
+      }
+
+      const nextPlan = generateLegalDrawPlan(remainingParticipants, remainingTopics);
+      if (!nextPlan) {
+        return { ok: false, message: "当前题池无法避开自投，请增加公共题或手动调整题库。" };
+      }
+      state.drawPlan = nextPlan;
+      return { ok: true, topic: plannedTopicForParticipant(participant.id), plan: nextPlan };
+    }
+
+    function validDrawPlanFor(participants, topics) {
+      if (!Array.isArray(state.drawPlan) || state.drawPlan.length < participants.length) return null;
+      const participantIds = new Set(participants.map(participant => normalizeParticipantRef(participant.id)));
+      const topicMap = new Map(topics.map(topic => [topic.id, topic]));
+      const usedTopicIds = new Set();
+      const plan = [];
+      for (const item of state.drawPlan) {
+        if (!participantIds.has(item.participantId)) continue;
+        const participant = participants.find(player => sameParticipantRef(player.id, item.participantId));
+        const topic = topicMap.get(item.topicId);
+        if (!participant || !topic || usedTopicIds.has(topic.id) || !canParticipantDrawTopic(participant, topic)) return null;
+        usedTopicIds.add(topic.id);
+        plan.push({ participantId: normalizeParticipantRef(participant.id), topicId: topic.id });
+      }
+      return plan.length === participants.length ? plan : null;
+    }
+
+    function generateLegalDrawPlan(participants, topics) {
+      const ordered = shuffleArray(participants).map(participant => ({
+        participant,
+        candidates: shuffleArray(availableTopicsForParticipant(participant, topics))
+      })).sort((a, b) => a.candidates.length - b.candidates.length);
+      if (ordered.some(item => !item.candidates.length)) return null;
+
+      const assignments = [];
+      const usedTopicIds = new Set();
+      function assign(index) {
+        if (index >= ordered.length) return true;
+        const item = ordered[index];
+        for (const topic of item.candidates) {
+          if (usedTopicIds.has(topic.id)) continue;
+          usedTopicIds.add(topic.id);
+          assignments.push({ participantId: normalizeParticipantRef(item.participant.id), topicId: topic.id });
+          if (assign(index + 1)) return true;
+          assignments.pop();
+          usedTopicIds.delete(topic.id);
+        }
+        return false;
+      }
+
+      return assign(0) ? assignments : null;
+    }
+
+    function shuffleArray(items) {
+      const next = [...items];
+      for (let index = next.length - 1; index > 0; index -= 1) {
+        const swapIndex = randomIndex(index + 1);
+        [next[index], next[swapIndex]] = [next[swapIndex], next[index]];
+      }
+      return next;
     }
 
     function render() {
@@ -5454,6 +5605,9 @@
       const draw = getDraw(participant.id);
       const pending = pendingDrawParticipantId === participant.id;
       const canDraw = participant.eligibleForDraw !== false;
+      const legalTopicCount = canDraw ? availableTopicsForParticipant(participant).length : 0;
+      const remainingPlayerCount = remainingDrawParticipants().length;
+      const hasEnoughTopics = availableTopics().length >= remainingPlayerCount;
       els.selectedStatus.textContent = draw ? "LOCKED" : canDraw ? "WAITING" : "VISITOR";
       els.selectedStatus.className = `badge ${draw ? "locked" : canDraw ? "pending" : "ready"}`;
 
@@ -5469,16 +5623,18 @@
               <button class="ghost-btn" type="button" data-action="cancel-draw">取消</button>
             </div>
           `
-          : `<button class="btn" type="button" data-action="draw-topic" ${availableTopics().length ? "" : "disabled"}>抽取并锁定</button>`;
+          : `<button class="btn" type="button" data-action="draw-topic" ${legalTopicCount && hasEnoughTopics ? "" : "disabled"}>抽取并锁定</button>`;
       const note = draw
         ? "该选手已经完成抽题，现场不提供重新抽取。"
         : !canDraw
           ? "这位报名者以观众/参与者身份展示，不参与抽题。"
         : pending
-          ? "下一次点击会正式抽取主题，并立即写入锁定记录。"
-        : availableTopics().length
-          ? "抽取会立即写入本地记录，并同步到投屏页。"
-          : "当前没有可用主题。";
+          ? "下一次点击会生成非自投抽签表，并立即锁定当前选手结果。"
+          : !legalTopicCount
+            ? "当前没有能避开该选手自投的可用主题。"
+            : !hasEnoughTopics
+              ? "可用主题少于剩余选手，请先补充题库。"
+              : "抽取会避开该选手自己提交的主题，并同步到投屏页。";
 
       els.currentPlayer.innerHTML = `
         <div class="hero-control">
@@ -5532,6 +5688,7 @@
           <div class="ppt-card">
             <span class="ppt-no">${escapeHTML(topic.pptNo)}</span>
             <div class="file-name">${escapeHTML(topic.pptFile || "未填写 PPT 文件名")}</div>
+            <div class="file-name">${escapeHTML(topicSubmitterLabel(topic))}</div>
             <div class="ppt-actions">
               <span class="badge ${ppt.sessionFile ? "ready" : ppt.knownName ? "pending" : "pending"}">${ppt.sessionFile ? "可打开" : ppt.knownName ? "已登记" : "待选择"}</span>
               <button class="ghost-btn" type="button" data-action="open-current-ppt" ${ppt.sessionFile ? "" : "disabled"}>打开 PPT</button>
@@ -5567,7 +5724,7 @@
                   <td class="mono">${escapeHTML(formatDateTime(record.drawnAt))}</td>
                   <td>${escapeHTML(participant ? participant.nickname : record.participantId)}</td>
                   <td>${escapeHTML(topic ? topic.title : record.topicId)}</td>
-                  <td class="mono">${escapeHTML(topic ? topic.pptNo : "")}</td>
+                  <td class="mono">${escapeHTML(topic ? `${topic.pptNo} · ${topicSubmitterLabel(topic)}` : "")}</td>
                 </tr>
               `;
             }).join("")}
@@ -5894,6 +6051,7 @@
           <div class="stage-info-label">PPT</div>
           <strong>${escapeHTML(topic ? topic.pptNo : "未抽取")}</strong>
           <p>${escapeHTML(topic ? (topic.pptFile || "未填写文件名") : "等待主题对应 PPT")}</p>
+          ${topic ? `<p>${escapeHTML(topicSubmitterLabel(topic))}</p>` : ""}
           ${topic ? `<p class="mono">${ppt && ppt.sessionFile ? "FILE READY" : ppt && ppt.knownName ? "FILE NAMED" : "FILE PENDING"}</p>` : ""}
         </div>
       `;
@@ -6096,6 +6254,10 @@
         showToast("没有可用主题。");
         return;
       }
+      if (!availableTopicsForParticipant(participant, topics).length) {
+        showToast("当前没有能避开该选手自投的可用主题。");
+        return;
+      }
       pendingDrawParticipantId = participant.id;
       render();
     }
@@ -6122,11 +6284,20 @@
         showToast("没有可用主题。");
         return;
       }
-      const topic = topics[randomIndex(topics.length)];
+      const planResult = ensureDrawPlanFor(participant);
+      if (!planResult.ok || !planResult.topic) {
+        pendingDrawParticipantId = null;
+        render();
+        showToast(planResult.message || "当前题池无法生成合法抽签表。");
+        return;
+      }
+      const topic = planResult.topic;
       state.draws[participant.id] = {
         topicId: topic.id,
-        drawnAt: new Date().toISOString()
+        drawnAt: new Date().toISOString(),
+        rule: "non-self-submission"
       };
+      state.drawPlan = state.drawPlan.filter(item => item.participantId !== normalizeParticipantRef(participant.id));
       state.currentParticipantId = participant.id;
       state.stageMode = "draw";
       pendingDrawParticipantId = null;
@@ -6326,7 +6497,10 @@
           topicId: record.topicId,
           topicTitle: topic ? topic.title : "",
           pptNo: topic ? topic.pptNo : "",
-          pptFile: topic ? topic.pptFile : ""
+          pptFile: topic ? topic.pptFile : "",
+          submitterId: topic ? topic.submitterId : "",
+          submitterName: topic ? topic.submitterName : "",
+          rule: record.rule || ""
         };
       });
       downloadJson({

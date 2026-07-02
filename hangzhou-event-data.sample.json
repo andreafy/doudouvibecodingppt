@@ -8,6 +8,8 @@
       "id": "p01",
       "nickname": "示例选手 A",
       "presence": "线下",
+      "role": "乱讲PPT选手",
+      "eligibleForDraw": true,
       "stage": "Coding Phase 1",
       "keywords": ["产品直觉", "快速原型", "现场展示"],
       "demo": {
@@ -20,6 +22,8 @@
       "id": "p02",
       "nickname": "示例选手 B",
       "presence": "线上",
+      "role": "乱讲PPT选手",
+      "eligibleForDraw": true,
       "stage": "Coding Phase 2",
       "keywords": ["AI Workflow", "数据整理", "小工具"],
       "demo": {
@@ -35,14 +39,22 @@
       "title": "给杭州的一次现场协作做一个最小工具",
       "summary": "围绕当天真实活动场景，做一个能立刻帮大家减少混乱的小工具。",
       "pptNo": "PPT-01",
-      "pptFile": "PPT-01-hangzhou-collaboration.pptx"
+      "pptFile": "PPT-01-hangzhou-collaboration.pptx",
+      "submitterId": "p02",
+      "submitterName": "示例选手 B",
+      "status": "approved",
+      "enabled": true
     },
     {
       "id": "t02",
       "title": "把报名表变成现场节奏控制台",
       "summary": "从表单数据出发，设计一个主持人当天能稳定操作的控制界面。",
       "pptNo": "PPT-02",
-      "pptFile": "PPT-02-event-control.pptx"
+      "pptFile": "PPT-02-event-control.pptx",
+      "submitterId": "p01",
+      "submitterName": "示例选手 A",
+      "status": "approved",
+      "enabled": true
     }
   ]
 }

@@ -132,6 +132,9 @@
       "summary": "围绕当天真实活动场景，做一个能立刻帮大家减少混乱的小工具。",
       "pptNo": "PPT-01",
       "pptFile": "PPT-01-hangzhou-collaboration.pptx",
+      "submitterId": "p02",
+      "submitterName": "示例选手 B",
+      "status": "approved",
       "enabled": true,
       "weight": 1
     }
@@ -146,10 +149,27 @@
 - `summary`
 - `pptNo`
 - `pptFile`
+- `submitterId`：提交该题目或 PPT 的选手 ID，用于避免选手抽到自己提交的题。
+- `submitterName`：提交者昵称，只用于主持人和导出记录识别。
+- `status`：`approved` / `draft` / `hidden`，只有可展示题进入抽签池。
 - `enabled`
 - `weight`
 
+抽签规则：
+
+- 正式选手必须有稳定 `id`。
+- 每个选手提交的题目或 PPT 必须写入 `submitterId`。
+- 当前选手只能抽到 `submitterId !== 当前选手 id` 的题目。
+- 现场锁定第一题前，系统会为剩余选手生成一张完整的非自投抽签表；如果无法生成，会阻止抽签并提示补充公共题或调整题库。
+- 没有 `submitterId` 的题目会被视为公共题，可以被任何选手抽到。
+
 如果某个城市活动不抽题，可以让题库为空，并让投屏页进入纯展示模式。
+
+现场前建议运行：
+
+```bash
+node scripts/validate-event-topics.mjs hangzhou-event-data.sample.json
+```
 
 ## 飞书审核建议
 
@@ -291,4 +311,3 @@
 - 支持一个部署服务多个城市活动。
 - 支持 `?event=hangzhou-2026-vibecoding` 切换活动。
 - 增加现场前检查页，自动提示缺字段、缺权限、无审核视图等问题。
-
