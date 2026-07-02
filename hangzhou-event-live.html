@@ -4544,23 +4544,23 @@
     .stage-timer-pill {
       display: inline-flex;
       align-items: center;
-      gap: 9px;
-      min-height: 40px;
-      padding: 0 14px;
+      gap: 12px;
+      min-height: 48px;
+      padding: 0 18px;
       border: 2px dashed rgba(255, 244, 220, .58);
       border-radius: 999px;
       color: var(--chalk-yellow);
       background: rgba(0, 0, 0, .16);
       box-shadow: 0 4px 0 rgba(0, 0, 0, .2);
       font-family: var(--mono);
-      font-size: 11px;
+      font-size: 12px;
       font-weight: 950;
       letter-spacing: .1em;
     }
 
     .stage-timer-pill strong {
       color: inherit;
-      font-size: 18px;
+      font-size: clamp(25px, 2.1vw, 36px);
       line-height: 1;
     }
 
@@ -4577,6 +4577,12 @@
     .stage-timer-pill.is-over {
       color: var(--chalk-pink);
       border-color: rgba(255, 139, 161, .9);
+    }
+
+    .stage-timer-pill.is-idle {
+      color: var(--chalk-yellow);
+      border-color: rgba(255, 215, 106, .75);
+      background: rgba(255, 215, 106, .1);
     }
 
     .stage-timer-card .stage-timer-time {
@@ -6368,11 +6374,11 @@
 
     function renderStageTimerPill() {
       const snapshot = currentTimerSnapshot();
-      if (snapshot.status === "idle") return "";
       return `
         <span class="stage-timer-pill ${snapshot.className}" data-timer-shell>
           <span data-timer-label>${escapeHTML(snapshot.label)}</span>
           <strong data-timer-display>${escapeHTML(snapshot.display)}</strong>
+          <span data-timer-status>${escapeHTML(snapshot.code)}</span>
         </span>
       `;
     }
