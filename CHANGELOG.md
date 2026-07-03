@@ -10,6 +10,7 @@
 - Added Demo Flash / Demo Wall workflow from `codex/demo-flash-workflow`.
 - Added reusable stage timer presets for formal talks, demo flashes, and handoff buffers.
 - Added streamlined host run controls for moving through the live event flow.
+- Added an opening overview on the projection standby screen with live signup stats and a four-step event flow.
 
 ### Changed
 

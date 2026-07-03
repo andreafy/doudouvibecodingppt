@@ -4874,6 +4874,75 @@
       font-weight: 900;
     }
 
+    .stage-opening-flow {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      max-width: 960px;
+      margin-top: -4px;
+    }
+
+    .stage-flow-step {
+      position: relative;
+      min-height: 104px;
+      display: grid;
+      align-content: center;
+      gap: 5px;
+      padding: 16px 16px 14px;
+      border: 2px dashed rgba(255, 244, 220, .54);
+      border-radius: 20px 14px 22px 16px / 16px 23px 14px 21px;
+      background:
+        linear-gradient(135deg, rgba(255, 215, 106, .1), transparent 48%),
+        rgba(0, 0, 0, .16);
+      box-shadow: inset 0 0 18px rgba(0, 0, 0, .14);
+      transform: rotate(-.6deg);
+    }
+
+    .stage-flow-step:nth-child(2n) {
+      border-color: rgba(132, 216, 255, .62);
+      transform: rotate(.5deg);
+    }
+
+    .stage-flow-step:nth-child(3n) {
+      border-color: rgba(164, 227, 109, .62);
+    }
+
+    .stage-flow-step::before {
+      content: attr(data-step);
+      position: absolute;
+      right: 12px;
+      top: -13px;
+      display: inline-grid;
+      place-items: center;
+      min-width: 34px;
+      height: 28px;
+      padding: 0 7px;
+      border: 2px dashed rgba(22, 35, 30, .28);
+      border-radius: 999px;
+      color: #16231e;
+      background: var(--chalk-yellow);
+      box-shadow: 0 3px 0 rgba(0, 0, 0, .18);
+      font-family: var(--mono);
+      font-size: 11px;
+      font-weight: 950;
+      letter-spacing: .08em;
+    }
+
+    .stage-flow-step strong {
+      color: var(--chalk);
+      font-size: clamp(20px, 1.6vw, 30px);
+      line-height: 1.08;
+      font-weight: 950;
+      text-shadow: 2px 3px 0 rgba(0, 0, 0, .18);
+    }
+
+    .stage-flow-step span {
+      color: var(--chalk-dim);
+      font-size: clamp(13px, 1vw, 17px);
+      line-height: 1.32;
+      font-weight: 850;
+    }
+
     .stage-word-cloud {
       display: flex;
       flex-wrap: wrap;
@@ -5195,6 +5264,10 @@
         grid-template-columns: repeat(2, minmax(0, 1fr));
       }
 
+      .stage-opening-flow {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
       .run-step-row,
       .run-actions {
         grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -5218,6 +5291,10 @@
       .stage-actions {
         width: 100%;
         justify-content: space-between;
+      }
+
+      .stage-opening-flow {
+        grid-template-columns: 1fr;
       }
 
       .run-head {
@@ -6955,7 +7032,8 @@
           <h1 class="stage-opening-title">${escapeHTML(eventDisplayTitle())}</h1>
           <p>${escapeHTML(noData ? "等待活动数据同步。" : eventSubtitle())}</p>
           ${renderStageStats()}
-          ${renderKeywordWall(18)}
+          ${renderOpeningFlow()}
+          ${renderKeywordWall(12)}
         </div>
       `;
       const side = `
@@ -6969,6 +7047,25 @@
         </aside>
       `;
       els.stageView.innerHTML = renderStageShell("standby is-standby", "STANDBY", main, side, "READY", "assets/penguin-podium.png");
+    }
+
+    function renderOpeningFlow() {
+      const steps = [
+        ["签到围观", "先把场子热起来，线上线下都算数"],
+        ["抽题上台", "选手避开自投题，现场锁定结果"],
+        ["三分钟乱讲", "PPT 可以认真，也可以离谱"],
+        ["Demo 快闪", "看大家最近都 Vibe 出了啥"]
+      ];
+      return `
+        <div class="stage-opening-flow" aria-label="活动流程">
+          ${steps.map((step, index) => `
+            <div class="stage-flow-step" data-step="${String(index + 1).padStart(2, "0")}">
+              <strong>${escapeHTML(step[0])}</strong>
+              <span>${escapeHTML(step[1])}</span>
+            </div>
+          `).join("")}
+        </div>
+      `;
     }
 
     function renderFocusStage() {
