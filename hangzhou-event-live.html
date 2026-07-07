@@ -5578,11 +5578,15 @@
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
   <script>
+    const URL_PARAMS = new URLSearchParams(window.location.search);
     const STORAGE_DATA_KEY = "merging-hangzhou-event-data-v2";
     const STORAGE_STATE_KEY = "merging-hangzhou-event-state-v1";
     const SYNC_CHANNEL = "merging-hangzhou-event-sync-v1";
-    const REMOTE_DATA_URL = new URLSearchParams(window.location.search).get("data") || window.HANGZHOU_EVENT_DATA_URL || defaultRemoteDataUrl();
+    const REMOTE_DATA_URL = URL_PARAMS.get("data") || window.HANGZHOU_EVENT_DATA_URL || defaultRemoteDataUrl();
+    const LIVE_STATE_URL = URL_PARAMS.get("live") || window.HANGZHOU_LIVE_STATE_URL || defaultLiveStateUrl();
+    const LIVE_CONTROL_KEY = URL_PARAMS.get("controlKey") || window.HANGZHOU_LIVE_CONTROL_KEY || "";
     const REMOTE_SYNC_INTERVAL_MS = 30 * 1000;
+    const LIVE_STATE_SYNC_INTERVAL_MS = 1000;
     const STAGE_MODES = [
       { id: "standby", label: "开场", code: "STANDBY", hint: "入场待机，收拢注意力" },
       { id: "focus", label: "聚焦", code: "FOCUS", hint: "主持人准备开场" },
@@ -5698,6 +5702,18 @@
       lastSyncedAt: null,
       error: ""
     };
+    const liveSyncState = {
+      pendingPull: false,
+      pendingPush: false,
+      lastPulledAt: null,
+      lastPushedAt: null,
+      lastRaw: "",
+      lastLocalWriteAt: 0,
+      revision: 0,
+      storage: "",
+      error: ""
+    };
+    let applyingLiveState = false;
     const runtimePptFiles = new Map();
     const sync = "BroadcastChannel" in window ? new BroadcastChannel(SYNC_CHANNEL) : null;
     let lastSeenDataRaw = readStorage(STORAGE_DATA_KEY) || "";
@@ -5945,6 +5961,12 @@
       return isHttp && !localHosts.has(window.location.hostname) ? "/api/hangzhou-event-data" : "";
     }
 
+    function defaultLiveStateUrl() {
+      const localHosts = new Set(["localhost", "127.0.0.1", "0.0.0.0", "::1"]);
+      const isHttp = window.location.protocol === "http:" || window.location.protocol === "https:";
+      return isHttp && !localHosts.has(window.location.hostname) ? "/api/live-state" : "";
+    }
+
     function normalizeDrawEligibility(participant, role) {
       if (!isSpeakerRole(role)) return false;
       if (typeof participant.eligibleForDraw === "boolean") return participant.eligibleForDraw;
@@ -6012,6 +6034,7 @@
       lastSeenStateRaw = payload;
       writeStorage(STORAGE_STATE_KEY, payload);
       notifySync("state", payload);
+      publishLiveState(payload);
     }
 
     function notifySync(kind, payload) {
@@ -6570,22 +6593,36 @@
       const url = remoteDataUrl();
       els.syncDataButton.disabled = remoteSyncState.pending || !url;
       if (!url) {
-        els.syncStatus.textContent = "通过 ?data=hangzhou-event-data.json 连接同步源。";
+        setSyncStatusText("通过 ?data=hangzhou-event-data.json 连接同步源。");
         return;
       }
       if (remoteSyncState.pending) {
-        els.syncStatus.textContent = "正在读取同步数据。";
+        setSyncStatusText("正在读取同步数据。");
         return;
       }
       if (remoteSyncState.error) {
-        els.syncStatus.textContent = `同步失败：${remoteSyncState.error}`;
+        setSyncStatusText(`同步失败：${remoteSyncState.error}`);
         return;
       }
       if (remoteSyncState.lastSyncedAt) {
-        els.syncStatus.textContent = `最近同步 ${formatDateTime(remoteSyncState.lastSyncedAt)}，每 30 秒刷新。`;
+        setSyncStatusText(`最近同步 ${formatDateTime(remoteSyncState.lastSyncedAt)}，每 30 秒刷新。`);
         return;
       }
-      els.syncStatus.textContent = "已连接同步源，等待首次刷新。";
+      setSyncStatusText("已连接同步源，等待首次刷新。");
+    }
+
+    function setSyncStatusText(text) {
+      const liveText = liveStateStatusText();
+      els.syncStatus.textContent = liveText ? `${text} ${liveText}` : text;
+    }
+
+    function liveStateStatusText() {
+      if (!liveStateUrl()) return "";
+      if (liveSyncState.error) return `现场同步失败：${liveSyncState.error}`;
+      if (liveSyncState.storage === "memory") return "现场同步：临时内存";
+      if (liveControlKey() && liveSyncState.lastPushedAt) return `现场已发布 ${formatDateTime(liveSyncState.lastPushedAt)}`;
+      if (liveSyncState.lastPulledAt) return `现场已读取 ${formatDateTime(liveSyncState.lastPulledAt)}`;
+      return liveControlKey() ? "现场同步：待发布" : "现场同步：只读";
     }
 
     function renderRoster() {
@@ -7838,6 +7875,107 @@
       return String(REMOTE_DATA_URL || "").trim();
     }
 
+    function liveStateUrl() {
+      return String(LIVE_STATE_URL || "").trim();
+    }
+
+    function liveControlKey() {
+      return String(LIVE_CONTROL_KEY || "").trim();
+    }
+
+    function canApplyLiveState() {
+      return !shouldUseRemoteData() || eventData.participants.length > 0;
+    }
+
+    function publishLiveState(payload) {
+      if (applyingLiveState || !liveStateUrl() || !liveControlKey()) return;
+
+      liveSyncState.pendingPush = true;
+      liveSyncState.lastLocalWriteAt = Date.now();
+      liveSyncState.lastRaw = payload;
+      fetch(liveStateUrl(), {
+        method: "POST",
+        cache: "no-store",
+        headers: {
+          "Content-Type": "application/json",
+          "X-Live-Control-Key": liveControlKey()
+        },
+        body: `{"state":${payload}}`
+      })
+        .then(async response => {
+          const result = await response.json().catch(() => ({}));
+          if (!response.ok || result.ok === false) {
+            throw new Error(result.error || `HTTP ${response.status}`);
+          }
+          liveSyncState.error = "";
+          liveSyncState.revision = Number(result.revision || liveSyncState.revision || 0);
+          liveSyncState.storage = result.storage || "";
+          liveSyncState.lastPushedAt = result.updatedAt || new Date().toISOString();
+        })
+        .catch(error => {
+          console.warn("Live state publish failed", error);
+          liveSyncState.error = error.message || "现场状态写入失败";
+        })
+        .finally(() => {
+          liveSyncState.pendingPush = false;
+          renderSyncStatus();
+        });
+    }
+
+    async function pullLiveState() {
+      if (!liveStateUrl() || liveSyncState.pendingPull) return;
+      if (liveControlKey() && liveSyncState.pendingPush) return;
+      if (!canApplyLiveState()) return;
+
+      liveSyncState.pendingPull = true;
+      try {
+        const url = new URL(liveStateUrl(), window.location.href);
+        url.searchParams.set("_sync", String(Date.now()));
+        const response = await fetch(url.href, { cache: "no-store" });
+        const result = await response.json().catch(() => ({}));
+        if (!response.ok || result.ok === false) {
+          throw new Error(result.error || `HTTP ${response.status}`);
+        }
+
+        liveSyncState.error = "";
+        liveSyncState.revision = Number(result.revision || liveSyncState.revision || 0);
+        liveSyncState.storage = result.storage || "";
+        liveSyncState.lastPulledAt = result.updatedAt || new Date().toISOString();
+        if (!result.state) return;
+
+        const payload = JSON.stringify(result.state);
+        if (payload === liveSyncState.lastRaw || payload === lastSeenStateRaw) return;
+        if (liveControlKey() && isOlderThanLocalState(result.state)) return;
+
+        applyingLiveState = true;
+        applySharedStatePayload(payload);
+        writeStorage(STORAGE_STATE_KEY, payload);
+        notifySync("state", payload);
+        liveSyncState.lastRaw = payload;
+        render();
+      } catch (error) {
+        console.warn("Live state pull failed", error);
+        liveSyncState.error = error.message || "现场状态读取失败";
+      } finally {
+        applyingLiveState = false;
+        liveSyncState.pendingPull = false;
+        renderSyncStatus();
+      }
+    }
+
+    function isOlderThanLocalState(remoteState) {
+      const remoteTime = Date.parse(remoteState && remoteState.updatedAt);
+      const localTime = Date.parse(state && state.updatedAt);
+      if (!Number.isFinite(remoteTime) || !Number.isFinite(localTime)) return false;
+      return remoteTime < localTime && Date.now() - liveSyncState.lastLocalWriteAt < 5000;
+    }
+
+    function initializeLiveStateSync() {
+      if (!liveStateUrl()) return;
+      pullLiveState();
+      window.setInterval(pullLiveState, LIVE_STATE_SYNC_INTERVAL_MS);
+    }
+
     function initializeRemoteSync() {
       renderSyncStatus();
       if (!remoteDataUrl()) return;
@@ -7896,6 +8034,7 @@
         saveEventData();
         saveEventState();
         render();
+        pullLiveState();
         showToast(`已同步 ${eventData.participants.length} 条报名。`);
       } catch (error) {
         console.error(error);
@@ -8357,6 +8496,7 @@
 
     render();
     initializeRemoteSync();
+    initializeLiveStateSync();
     window.setInterval(pollSharedStorage, 1000);
     window.setInterval(updateTimerDisplays, 500);
   </script>
