@@ -1,4 +1,5 @@
 const DEFAULT_STATE_KEY = "hangzhou-event-live-state-v1";
+const DEFAULT_BLOB_API_URL = "https://vercel.com/api/blob";
 const MAX_BODY_BYTES = 128 * 1024;
 
 let memoryRecord = null;
@@ -101,6 +102,21 @@ function headerValue(request, name) {
 }
 
 async function readLiveState() {
+  const blob = blobConfig();
+  if (blob) {
+    const value = await readBlobState(blob);
+    if (!value) return emptyRecord("blob");
+    try {
+      return {
+        ...emptyRecord("blob"),
+        ...JSON.parse(value)
+      };
+    } catch (error) {
+      console.warn("Invalid live state in blob", error);
+      return emptyRecord("blob");
+    }
+  }
+
   const redis = redisConfig();
   if (redis) {
     const value = await redisCommand(redis, ["GET", stateKey()]);
@@ -123,6 +139,12 @@ async function readLiveState() {
 }
 
 async function writeLiveState(record) {
+  const blob = blobConfig();
+  if (blob) {
+    await writeBlobState(blob, JSON.stringify(record));
+    return "blob";
+  }
+
   const redis = redisConfig();
   if (redis) {
     await redisCommand(redis, ["SET", stateKey(), JSON.stringify(record)]);
@@ -144,6 +166,64 @@ function emptyRecord(storage) {
 
 function stateKey() {
   return String(process.env.LIVE_STATE_KEY || DEFAULT_STATE_KEY).trim() || DEFAULT_STATE_KEY;
+}
+
+function blobConfig() {
+  const token = String(process.env.BLOB_READ_WRITE_TOKEN || "").trim();
+  if (!token) return null;
+
+  const storeId = token.split("_")[3] || "";
+  if (!storeId) throw new Error("Invalid BLOB_READ_WRITE_TOKEN");
+
+  const pathname = String(process.env.BLOB_LIVE_STATE_PATH || `${stateKey()}.json`).trim();
+  return {
+    apiUrl: String(process.env.VERCEL_BLOB_API_URL || DEFAULT_BLOB_API_URL).replace(/\/+$/, ""),
+    token,
+    storeId,
+    pathname
+  };
+}
+
+async function readBlobState(blob) {
+  const url = new URL(`https://${blob.storeId}.private.blob.vercel-storage.com/${blob.pathname}`);
+  url.searchParams.set("cache", "0");
+
+  const response = await fetch(url, {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${blob.token}`,
+      "Cache-Control": "no-cache"
+    }
+  });
+
+  if (response.status === 404) return null;
+  if (!response.ok) {
+    throw new Error(`Blob read failed: HTTP ${response.status}`);
+  }
+  return response.text();
+}
+
+async function writeBlobState(blob, body) {
+  const params = new URLSearchParams({ pathname: blob.pathname });
+  const response = await fetch(`${blob.apiUrl}/?${params.toString()}`, {
+    method: "PUT",
+    headers: {
+      Authorization: `Bearer ${blob.token}`,
+      "Content-Type": "application/json",
+      "x-api-version": "12",
+      "x-vercel-blob-access": "private",
+      "x-add-random-suffix": "0",
+      "x-allow-overwrite": "1",
+      "x-content-type": "application/json"
+    },
+    body
+  });
+
+  const payload = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    throw new Error(payload.error || payload.message || `Blob write failed: HTTP ${response.status}`);
+  }
+  return payload;
 }
 
 function redisConfig() {

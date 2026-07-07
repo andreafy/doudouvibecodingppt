@@ -7,6 +7,7 @@
 - Added the real Hangzhou event topic pool in `hangzhou-event-topics.json`, including three public backup topics.
 - Added a controlled redraw action for locked speakers, allowing the host to release only the current speaker's draw result and run the same non-self draw flow again.
 - Added a minimal live state API for cross-device stage sync, with control-key writes and read-only projection polling.
+- Added Vercel Blob persistence for live state sync, so the control page and projection page share the same state across devices.
 
 ### Changed
 

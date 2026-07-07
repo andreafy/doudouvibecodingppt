@@ -4,3 +4,4 @@
 !.env.example
 hangzhou-event-data.json
 .vercel
+.env*.local
