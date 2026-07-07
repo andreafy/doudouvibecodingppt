@@ -1,4 +1,9 @@
 {
+  "functions": {
+    "api/hangzhou-event-data.js": {
+      "includeFiles": "hangzhou-event-topics.json"
+    }
+  },
   "rewrites": [
     {
       "source": "/",

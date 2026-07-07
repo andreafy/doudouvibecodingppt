@@ -9,6 +9,8 @@
 ### Changed
 
 - Switched the Feishu sync default topic file from the sample data to `hangzhou-event-topics.json`.
+- Updated the server-side fallback topic pool to the real Hangzhou topics, so production will not fall back to the old sample topics if the JSON file is unavailable in the serverless bundle.
+- Configured Vercel to include `hangzhou-event-topics.json` in the event data function bundle.
 - Topic validation now allows disabled blank placeholders while still blocking enabled topics without titles or PPT filenames.
 - Kept 阿巧's topic slot as a disabled blank placeholder until the real title and PPT are submitted.
 
