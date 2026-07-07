@@ -4370,7 +4370,7 @@
 
     .run-actions {
       display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(92px, 1fr));
       gap: 8px;
     }
 
@@ -6399,6 +6399,12 @@
       if (!els.runPanel || !els.runStatusLabel) return;
       const snapshot = runWorkflowSnapshot();
       els.runStatusLabel.textContent = snapshot.statusCode;
+      const canRedrawCurrent = Boolean(
+        snapshot.current
+        && getDraw(snapshot.current.id)
+        && currentTimerSnapshot().status === "idle"
+        && !new Set(state.runCompletedIds || []).has(snapshot.current.id)
+      );
       const steps = [
         { id: "speaker", label: "选手" },
         { id: "draw", label: "抽题" },
@@ -6424,6 +6430,7 @@
           <div class="run-actions">
             <button class="ghost-btn" type="button" data-action="run-prev-speaker" ${snapshot.previous ? "" : "disabled"}>上一位</button>
             <button class="ghost-btn" type="button" data-action="run-skip-speaker" ${snapshot.next ? "" : "disabled"}>跳过</button>
+            ${canRedrawCurrent ? `<button class="danger-btn" type="button" data-action="run-redraw">重抽当前</button>` : ""}
             <button class="ghost-btn" type="button" data-action="open-stage">打开投屏</button>
           </div>
         </div>
@@ -6735,7 +6742,12 @@
 
       const keywords = detailKeywords(participant);
       const drawButton = draw
-        ? `<button class="danger-btn" type="button" disabled>结果已锁定</button>`
+        ? `
+          <div class="confirm-actions">
+            <button class="ghost-btn" type="button" disabled>结果已锁定</button>
+            <button class="danger-btn" type="button" data-action="redraw-topic">重抽</button>
+          </div>
+        `
         : !canDraw
           ? `<button class="ghost-btn" type="button" disabled>仅展示</button>`
         : pending
@@ -6747,7 +6759,7 @@
           `
           : `<button class="btn" type="button" data-action="draw-topic" ${legalTopicCount && hasEnoughTopics ? "" : "disabled"}>抽取并锁定</button>`;
       const note = draw
-        ? "该选手已经完成抽题，现场不提供重新抽取。"
+        ? "该选手已经完成抽题。如现场需要调整，可释放这一条结果并重新抽题。"
         : !canDraw
           ? "这位报名者以观众/参与者身份展示，不参与抽题。"
         : pending
@@ -7619,6 +7631,50 @@
       showToast(`已锁定：${participant.nickname} · ${topic.pptNo}`);
     }
 
+    function releaseParticipantDraw(participant) {
+      if (!participant) return;
+      const draw = getDraw(participant.id);
+      if (!draw) {
+        showToast("当前选手还没有锁定题目。");
+        return;
+      }
+
+      const topic = getTopic(draw.topicId);
+      const timer = currentTimerSnapshot();
+      const willResetTimer = participant.id === state.currentParticipantId && timer.status !== "idle";
+      const topicLabel = topic
+        ? `${topic.pptNo} · ${topic.title}`
+        : draw.topicId || "已锁定题目";
+      const confirmed = window.confirm([
+        `确认让 ${participant.nickname} 重新抽题吗？`,
+        `将释放：${topicLabel}`,
+        "其他选手的抽题结果不会变化。",
+        willResetTimer ? "当前计时也会重置。" : ""
+      ].filter(Boolean).join("\n"));
+      if (!confirmed) return;
+
+      delete state.draws[participant.id];
+      state.drawPlan = state.drawPlan.filter(item => item.participantId !== normalizeParticipantRef(participant.id));
+      state.currentParticipantId = participant.id;
+      state.stageMode = "draw";
+      pendingDrawParticipantId = participant.id;
+      if (willResetTimer) {
+        state.timer = defaultTimerState(timer.presetId);
+      }
+      saveEventState();
+      render();
+      showToast(`已释放 ${participant.nickname} 的抽题结果，可重新抽题。`);
+    }
+
+    function redrawSelectedParticipant() {
+      releaseParticipantDraw(selectedParticipant());
+    }
+
+    function redrawRunParticipant() {
+      const participant = runWorkflowSnapshot().current;
+      releaseParticipantDraw(participant);
+    }
+
     function showDemoWall() {
       state.demoFlashParticipantId = null;
       state.stageMode = "demoFlash";
@@ -8221,6 +8277,7 @@
       if (action === "draw-topic") handleDrawRequest();
       if (action === "confirm-draw") confirmDraw();
       if (action === "cancel-draw") cancelPendingDraw();
+      if (action === "redraw-topic") redrawSelectedParticipant();
       if (action === "choose-ppt") els.pptInput.click();
       if (action === "open-current-ppt") openCurrentPpt();
       if (action === "choose-data") els.dataInput.click();
@@ -8236,6 +8293,7 @@
       if (action === "run-start-first") startFirstRunParticipant();
       if (action === "run-draw") beginRunDraw();
       if (action === "run-confirm-draw") confirmRunDraw();
+      if (action === "run-redraw") redrawRunParticipant();
       if (action === "run-start-talk") startRunTalk();
       if (action === "run-complete-next") completeRunAndAdvance();
       if (action === "run-next-speaker") moveRunParticipant(1);
