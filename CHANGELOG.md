@@ -1,5 +1,17 @@
 # Changelog
 
+## 2026-07-07
+
+### Added
+
+- Added the real Hangzhou event topic pool in `hangzhou-event-topics.json`, including three public backup topics.
+
+### Changed
+
+- Switched the Feishu sync default topic file from the sample data to `hangzhou-event-topics.json`.
+- Topic validation now allows disabled blank placeholders while still blocking enabled topics without titles or PPT filenames.
+- Kept 阿巧's topic slot as a disabled blank placeholder until the real title and PPT are submitted.
+
 ## 2026-07-02
 
 ### Added

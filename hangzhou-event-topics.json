@@ -1,0 +1,125 @@
+{
+  "topics": [
+    {
+      "id": "player001",
+      "pptNo": "PPT001",
+      "title": "VibeCoding有歌声",
+      "summary": "三分钟内讲清楚这些奇怪的美好事物",
+      "pptFile": "PPT001-喜牛牛-康定斯基论点线面.pdf",
+      "submitterId": "rec27gyk6yiwfk",
+      "submitterName": "沉默的喜牛牛",
+      "status": "approved",
+      "enabled": true
+    },
+    {
+      "id": "player002",
+      "pptNo": "PPT002",
+      "title": "爱、死亡和VibeCoding",
+      "summary": "在爱里冲动，在死亡中重生",
+      "pptFile": "PPT002-lapiko-我以为我在写代码，其实我在写一封很长的情书.pdf",
+      "submitterId": "rec27gytougwsw",
+      "submitterName": "lapiko",
+      "status": "approved",
+      "enabled": true
+    },
+    {
+      "id": "player003",
+      "pptNo": "PPT003",
+      "title": "如何看待 AI Coding 取代传统 (Ctrl+) CV 编程范式",
+      "summary": "AI Coding 如何改写人类搬砖文明",
+      "pptFile": "PPT003-who is it.pdf",
+      "submitterId": "rec27gz3rgk75s",
+      "submitterName": "HanZephyr",
+      "status": "approved",
+      "enabled": true
+    },
+    {
+      "id": "player004",
+      "pptNo": "PPT004",
+      "title": "花60s,克隆一个不用睡觉的你",
+      "summary": "问题来了：谁是正版？",
+      "pptFile": "PPT004-seede-1_奥特曼穿搭启示.pdf",
+      "submitterId": "rec27h3seisuid",
+      "submitterName": "panda",
+      "status": "approved",
+      "enabled": true
+    },
+    {
+      "id": "player005",
+      "pptNo": "PPT005",
+      "title": "",
+      "summary": "",
+      "pptFile": "",
+      "submitterId": "rec27hgxifgmxy",
+      "submitterName": "阿巧",
+      "status": "draft",
+      "enabled": false
+    },
+    {
+      "id": "player006",
+      "pptNo": "PPT006",
+      "title": "Vibe to backroom",
+      "summary": "当 AI 编程把我送进赛博后室",
+      "pptFile": "PPT006-后室.pdf",
+      "submitterId": "rec27jfnvir4x2",
+      "submitterName": "牧宇",
+      "status": "approved",
+      "enabled": true
+    },
+    {
+      "id": "player007",
+      "pptNo": "PPT007",
+      "title": "与其内耗，不如自爆",
+      "summary": "AI 时代的精神朋克宣言",
+      "pptFile": "PPT007-大叉-情绪稳定地发疯.pdf",
+      "submitterId": "rec27hfvmsjlrn",
+      "submitterName": "蔡大叉",
+      "status": "approved",
+      "enabled": true
+    },
+    {
+      "id": "player008",
+      "pptNo": "PPT008",
+      "title": "兜总我带来了一个 PPT",
+      "summary": "当代优秀青年汇报表演学",
+      "pptFile": "PPT008-鹤仔-页面的层次感.pdf",
+      "submitterId": "rec27hgegogpli",
+      "submitterName": "鹤仔",
+      "status": "approved",
+      "enabled": true
+    },
+    {
+      "id": "public001",
+      "pptNo": "PPT009",
+      "title": "Vibe Coding与谈恋爱的相似性：开始都说懂我，后来都不理我！",
+      "summary": "论人类如何从甲方进化为急诊科常客",
+      "pptFile": "PPT009-假如佛得角全员来踢苏超.pdf",
+      "submitterId": "",
+      "submitterName": "public",
+      "status": "approved",
+      "enabled": true
+    },
+    {
+      "id": "public002",
+      "pptNo": "PPT010",
+      "title": "论Vibe Coding与健身亲子鉴定匹配度高达99.9999%的合理性",
+      "summary": "真正困难的从来不是开始",
+      "pptFile": "PPT010-主动失业的家庭主夫是AINative时代绩优股.pdf",
+      "submitterId": "",
+      "submitterName": "public",
+      "status": "approved",
+      "enabled": true
+    },
+    {
+      "id": "public003",
+      "pptNo": "PPT011",
+      "title": "我写 Prompt 的样子，像极了前任跟我解释“我不是这个意思”",
+      "summary": "原来，我是在给模型做情绪陪护",
+      "pptFile": "PPT011-职场打工人的人生是一场修行_乱讲PPT.pdf",
+      "submitterId": "",
+      "submitterName": "public",
+      "status": "approved",
+      "enabled": true
+    }
+  ]
+}

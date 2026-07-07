@@ -30,7 +30,8 @@ function validateEventData(data) {
 
   const participantIds = new Set(participants.map(participant => participant.id));
   topics.forEach(topic => {
-    if (!topic.title) errors.push(`Topic ${topic.id} is missing title.`);
+    if (topic.enabled && !topic.title) errors.push(`Topic ${topic.id} is missing title.`);
+    if (topic.enabled && !topic.pptFile) errors.push(`Topic ${topic.id} is missing pptFile.`);
     if (!topic.submitterId) {
       warnings.push(`Topic ${topic.id} has no submitterId and will be treated as a public topic.`);
       return;
@@ -68,6 +69,7 @@ function normalizeTopic(topic, index) {
     ...topic,
     id: stringOr(topic.id, `t${String(index + 1).padStart(2, "0")}`),
     title: stringOr(topic.title || topic.name, ""),
+    pptFile: stringOr(topic.pptFile || topic.file || topic.filename, ""),
     submitterId: normalizeRef(topic.submitterId || topic.submitter_id || topic.playerId || topic.player_id || topic.ownerId || topic.owner_id),
     enabled: topic.enabled !== false && !/禁用|不展示|取消|disabled|hidden|off/i.test(status)
   };
